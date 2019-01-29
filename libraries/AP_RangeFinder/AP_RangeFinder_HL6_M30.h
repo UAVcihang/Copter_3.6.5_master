@@ -18,6 +18,7 @@
 #define HL6_M30_CRC_LENGTH  5
 
 typedef enum HL6_M30_Status {
+	HL6_M30_GOT_NO_STATUS=-1,
 	HL6_M30_IDLE     = 0,
 	HL6_M30_GOT_START1 = 1, //同步头1
 	HL6_M30_GOT_START2 = 2, //同步头2
@@ -26,6 +27,7 @@ typedef enum HL6_M30_Status {
 	HL6_M30_GOT_DATA2=5,
 	HL6_M30_GOT_CRC,
 	HL6_M30_GOT_END,
+
 
 }HL6_M30_parse_status;
 

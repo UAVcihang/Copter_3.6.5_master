@@ -184,6 +184,10 @@ PH12 TIM5_CH3 TIM5 PWM(11) GPIO(83)
 #IMU control temp
 PA7  TIM3_CH2 TIM3 PWM(12) GPIO(84)
 
+# setup for the possibility of an IMU heater as the pixhawk2 cube has
+# an IMU header
+define HAL_HAVE_IMU_HEATER 1
+
 # analog in
 PA0 BATT_VOLTAGE_SENS ADC1 SCALE(1)
 PA1 BATT_CURRENT_SENS ADC1 SCALE(1)

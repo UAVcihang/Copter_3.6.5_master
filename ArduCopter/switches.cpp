@@ -135,6 +135,18 @@ void Copter::read_multiaux_switches()
             }
     		break;
     	case 5:
+        	// record B position
+        	if(control_mode != LOITER && control_mode != POSHOLD)
+        	{
+        		return;
+        	}
+        	if(mode_zigzag.zigzag_record_point(false))
+        	{
+        		gcs().send_text(MAV_SEVERITY_WARNING, "Record B point");
+        		AP_Notify::flags.zigzag_record = 81; // 3^4 = 81 means flash yellow 4 seconds
+        	}
+    		break;
+    	case 6:
         	// record A position
         	if(control_mode != LOITER && control_mode != POSHOLD)
         	{
@@ -147,18 +159,7 @@ void Copter::read_multiaux_switches()
         	}
 
     		break;
-    	case 6:
-        	// record B position
-        	if(control_mode != LOITER && control_mode != POSHOLD)
-        	{
-        		return;
-        	}
-        	if(mode_zigzag.zigzag_record_point(false))
-        	{
-        		gcs().send_text(MAV_SEVERITY_WARNING, "Record B point");
-        		AP_Notify::flags.zigzag_record = 81; // 3^4 = 81 means flash yellow 4 seconds
-        	}
-    		break;
+
 
     	}
     	aux_con.CH7_multi_flag = switch_position;

@@ -179,6 +179,17 @@ define BOARD_PWM_COUNT_DEFAULT 8
 # PWM output for buzzer
 PE5 TIM9_CH1 TIM9 GPIO(77) ALARM
 
+#PWM Control RGB_LED
+PH10 TIM5_CH1 TIM5 PWM(9) GPIO(81)
+PH11 TIM5_CH2 TIM5 PWM(10) GPIO(82)
+PH12 TIM5_CH3 TIM5 PWM(11) GPIO(83)
+#IMU control temp
+PA7  TIM3_CH2 TIM3 PWM(12) GPIO(84)
+
+# setup for the possibility of an IMU heater as the pixhawk2 cube has
+# an IMU header
+define HAL_HAVE_IMU_HEATER 1
+
 # analog in
 PA0 BATT_VOLTAGE_SENS ADC1 SCALE(1)
 PA1 BATT_CURRENT_SENS ADC1 SCALE(1)
@@ -211,8 +222,10 @@ PB12 CAN2_RX CAN2
 PB13 CAN2_TX CAN2
 
 # GPIOs
-PA7 HEATER_EN OUTPUT LOW GPIO(80)
-define HAL_HEATER_GPIO_PIN 80
+#PA7 HEATER_EN OUTPUT LOW GPIO(80)
+#define HAL_HEATER_GPIO_PIN 80
+
+
 
 PG1 VDD_BRICK_VALID INPUT PULLUP
 PG2 VDD_BRICK2_VALID INPUT PULLUP
@@ -245,6 +258,9 @@ PD2 SDMMC_CMD SDMMC1
 
 # red LED marked as B/E
 PB1 LED_RED OUTPUT GPIO(90)
+
+
+
 
 # green LED marked as PWR. We leave this solid on, but allow
 # for it to be controlled as a relay if needed

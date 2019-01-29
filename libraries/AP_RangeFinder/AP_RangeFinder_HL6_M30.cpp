@@ -69,13 +69,17 @@ bool AP_RangeFinder_HL6_M30::get_reading(uint16_t &reading_cm)
     	 uint8_t c = uart->read();
          switch(hl6_m30_parse_status)
          {
+            case HL6_M30_GOT_NO_STATUS:
+
+            	     break;
+
             case HL6_M30_IDLE:
 
             	if(c == HL6_M30_SYS_HEAP1) //0xEB=235
             	{
             		hl6_m30_parse_status = HL6_M30_GOT_START1;
             	}
-            	break;
+            	  break;
             case HL6_M30_GOT_START1://0x90=144
             	if(c == HL6_M30_SYS_HEAP2)
             	{
@@ -103,7 +107,7 @@ bool AP_RangeFinder_HL6_M30::get_reading(uint16_t &reading_cm)
             	}
             	else
             	{
-            		hl6_m30_parse_status = HL6_M30_IDLE;
+            		hl6_m30_parse_status = HL6_M30_GOT_NO_STATUS; //如果获取状态位是无效的，立即不在进行
             	}
             	break;
 
@@ -132,7 +136,15 @@ bool AP_RangeFinder_HL6_M30::get_reading(uint16_t &reading_cm)
             	if(hl6_m30_CRC16(hl6_m30_buf,HL6_M30_CRC_LENGTH,hl6_m30_crc_data))
             	{
             		 hl6_m30_data=(uint16_t)(hl6_m30_buf[2]*0x100+hl6_m30_buf[1]);  //得到的数据高位左移8位与低8位按位进行或运算
-            		 hl6_m30_parse_status = HL6_M30_GOT_END;
+                    if(c == HL6_M30_SYS_HEAP1) //0xEB=235   //这个过程已经要进行下一轮数据的读取了
+                    {
+                    	 hl6_m30_parse_status = HL6_M30_GOT_END;
+                    }
+                    else
+                    {
+                    	hl6_m30_parse_status = HL6_M30_IDLE;
+                    }
+
             	}
             	else
 				{
@@ -140,29 +152,40 @@ bool AP_RangeFinder_HL6_M30::get_reading(uint16_t &reading_cm)
             		hl6_m30_parse_status = HL6_M30_IDLE;
 				}
 
-                break;
-            case HL6_M30_GOT_END:	  //有效开始读取数据
 
-            	hl6_m30_parse_status = HL6_M30_IDLE;  //这次计算完成，下次重新计算
-            	hl6_m30_count++;
-            	hl6_m30_sum_data+=hl6_m30_data;
-         }
-    }
+
+                break;
+            case HL6_M30_GOT_END:
+                if(c == HL6_M30_SYS_HEAP2) //0x90=144
+                {
+                	hl6_m30_parse_status = HL6_M30_GOT_START2;	 //这里说明获取串口数据，已经满足两次同步帧头要求
+                 	hl6_m30_count++;
+                 	hl6_m30_sum_data+=hl6_m30_data;
+                }
+                else
+                {
+                	hl6_m30_parse_status = HL6_M30_IDLE;  //这次计算完成，下次重新计算
+                }
+                break;
+
+
+           }
+      }
     if (hl6_m30_count == 0)
     {
         return false;
     }
     else
     {
-     hal.uartC->printf("hl6_m30_buf[1]=%d\r\n",hl6_m30_buf[1]);
-     hal.uartC->printf("hl6_m30_buf[2]=%d\r\n",hl6_m30_buf[2]);
-     hal.uartC->printf("hl6_m30_data=%d\r\n",hl6_m30_data);
-     hal.uartC->printf("hl6_m30_count=%d\r\n",hl6_m30_count);
-     hal.uartC->printf("hl6_m30_sum_data=%d\r\n",hl6_m30_sum_data);
+//     hal.uartC->printf("hl6_m30_buf[1]=%d\r\n",hl6_m30_buf[1]);
+//     hal.uartC->printf("hl6_m30_buf[2]=%d\r\n",hl6_m30_buf[2]);
+//     hal.uartC->printf("hl6_m30_data=%d\r\n",hl6_m30_data);
+//     hal.uartC->printf("hl6_m30_count=%d\r\n",hl6_m30_count);
+//     hal.uartC->printf("hl6_m30_sum_data=%d\r\n",hl6_m30_sum_data);
    	 reading_cm= (uint16_t)(hl6_m30_sum_data/hl6_m30_count);
    	 reading_cm=reading_cm*10; //单位是cm
 
-   	 hal.uartC->printf("reading_cm=%d\r\n",reading_cm);
+//   	 hal.uartC->printf("reading_cm=%d\r\n",reading_cm);
    	 return true;
     }
 
