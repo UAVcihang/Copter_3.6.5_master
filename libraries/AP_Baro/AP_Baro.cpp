@@ -40,6 +40,7 @@
 #include "AP_Baro_LPS2XH.h"
 #include "AP_Baro_FBM320.h"
 #include "AP_Baro_DPS280.h"
+#include "AP_Baro_SPL06_001.h"
 #if HAL_WITH_UAVCAN
 #include "AP_Baro_UAVCAN.h"
 #endif
@@ -496,6 +497,10 @@ void AP_Baro::init(void)
         break;
 
     case AP_BoardConfig::PX4_BOARD_FMUV5:
+    	//        hal.console->printf("%%%%%%%%%%\r\n");
+    	//         ADD_BACKEND(AP_BARO_SPL06_001::probe(*this,
+    	//                                           std::move(hal.spi->get_device(HAL_BARO_SPL06_001_NAME))));
+    	//         hal.console->printf("%%%%%%%%%%\r\n");
         ADD_BACKEND(AP_Baro_MS56XX::probe(*this,
                                           std::move(hal.spi->get_device(HAL_BARO_MS5611_NAME))));
         break;

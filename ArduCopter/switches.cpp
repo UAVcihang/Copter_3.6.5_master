@@ -108,8 +108,8 @@ void Copter::read_multiaux_switches()
     else if (rc7_in < 1391) switch_position = 2; // Pump off
     else if (rc7_in < 1531) switch_position = 3; // RTL on
     else if (rc7_in < 1661) switch_position = 4; // RTL off
-    else if (rc7_in < 1851) switch_position = 5; // Record A point
-    else switch_position = 6;
+    else if (rc7_in < 1851) switch_position = 5; // Record B point
+    else switch_position = 6;  // Record A point
 
     // store time that switch last moved
     if (aux_con.CH7_multi_flag != switch_position)
@@ -257,12 +257,17 @@ void Copter::read_aux_switches()
     	 read_multiaux_switches();
 
     }
-    read_aux_switch(CH_7, aux_con.CH7_flag, g.ch7_option);
-    read_aux_switch(CH_8, aux_con.CH8_flag, g.ch8_option);
-    read_aux_switch(CH_9, aux_con.CH9_flag, g.ch9_option);
-    read_aux_switch(CH_10, aux_con.CH10_flag, g.ch10_option);
-    read_aux_switch(CH_11, aux_con.CH11_flag, g.ch11_option);
-    read_aux_switch(CH_12, aux_con.CH12_flag, g.ch12_option);
+    else
+    {
+        read_aux_switch(CH_7, aux_con.CH7_flag, g.ch7_option);
+        read_aux_switch(CH_8, aux_con.CH8_flag, g.ch8_option);
+        read_aux_switch(CH_9, aux_con.CH9_flag, g.ch9_option);
+        read_aux_switch(CH_10, aux_con.CH10_flag, g.ch10_option);
+        read_aux_switch(CH_11, aux_con.CH11_flag, g.ch11_option);
+        read_aux_switch(CH_12, aux_con.CH12_flag, g.ch12_option);
+
+    }
+
 }
 
 #undef read_aux_switch

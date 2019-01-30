@@ -69,7 +69,8 @@ void RGBLed::update_colours(void)
 {
     uint8_t brightness = _led_bright;
 
-    switch (pNotify->_rgb_led_brightness) {
+    switch (pNotify->_rgb_led_brightness)
+    {
     case RGB_LED_OFF:
         brightness = _led_off;
         break;
@@ -344,7 +345,8 @@ void RGBLed::update_colours(void)
     // gps failsafe pattern : flashing yellow and blue
     // ekf_bad pattern : flashing yellow and red
     if (AP_Notify::flags.failsafe_radio || AP_Notify::flags.failsafe_battery ||
-            AP_Notify::flags.ekf_bad || AP_Notify::flags.gps_glitching || AP_Notify::flags.leak_detected) {
+            AP_Notify::flags.ekf_bad || AP_Notify::flags.gps_glitching || AP_Notify::flags.leak_detected)
+    {
         switch(step) {
             case 0:
             case 1:
@@ -361,7 +363,8 @@ void RGBLed::update_colours(void)
             case 7:
             case 8:
             case 9:
-                if (AP_Notify::flags.leak_detected) {
+                if (AP_Notify::flags.leak_detected)
+                {
                     // purple if leak detected
                     _red_des = brightness;
                     _blue_des = brightness;
@@ -389,13 +392,16 @@ void RGBLed::update_colours(void)
     }
 
     // solid green or blue if armed
-    if (AP_Notify::flags.armed) {
+    if (AP_Notify::flags.armed)
+    {
         // solid green if armed with GPS 3d lock
-        if (AP_Notify::flags.gps_status >= AP_GPS::GPS_OK_FIX_3D) {
+        if (AP_Notify::flags.gps_status >= AP_GPS::GPS_OK_FIX_3D)
+        {
             _red_des = _led_off;
             _blue_des = _led_off;
             _green_des = brightness;
-        }else{
+        }else
+        {
             // solid blue if armed with no GPS lock
             _red_des = _led_off;
             _blue_des = brightness;
@@ -404,8 +410,10 @@ void RGBLed::update_colours(void)
         return;
     }else{
         // double flash yellow if failing pre-arm checks
-        if (!AP_Notify::flags.pre_arm_check) {
-            switch(step) {
+        if (!AP_Notify::flags.pre_arm_check)
+        {
+            switch(step)
+            {
                 case 0:
                 case 1:
                 case 4:
@@ -432,14 +440,17 @@ void RGBLed::update_colours(void)
             // slow flashing green if disarmed with GPS 3d lock (and no DGPS)
             // flashing blue if disarmed with no gps lock or gps pre_arm checks have failed
             bool fast_green = AP_Notify::flags.gps_status >= AP_GPS::GPS_OK_FIX_3D_DGPS && AP_Notify::flags.pre_arm_gps_check;
-            switch(step) {
+            switch(step)
+            {
                 case 0:
-                    if (fast_green) {
+                    if (fast_green)
+                    {
                         _green_des = brightness;
                     }
                     break;
                 case 1:
-                    if (fast_green) {
+                    if (fast_green)
+                    {
                         _green_des = _led_off;
                     }
                     break;
@@ -466,7 +477,8 @@ void RGBLed::update_colours(void)
                     }
                     break;
                 case 5:
-                    if (fast_green) {
+                    if (fast_green)
+                    {
                         _green_des = _led_off;
                     }
                     break;
@@ -502,10 +514,12 @@ void RGBLed::update_colours(void)
 // at 50Hz
 void RGBLed::update()
 {
-    if (!pNotify->_rgb_led_override) {
+    if (!pNotify->_rgb_led_override)
+    {
         update_colours();
         set_rgb(_red_des, _green_des, _blue_des);
-    } else {
+    } else
+    {
         update_override();
     }
 }

@@ -181,7 +181,8 @@ bool Copter::set_mode(control_mode_t mode, mode_reason_t reason)
 {
 
     // return immediately if we are already in the desired mode
-    if (mode == control_mode) {
+    if (mode == control_mode)
+    {
         control_mode_reason = reason;
         return true;
     }
