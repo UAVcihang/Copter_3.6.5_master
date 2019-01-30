@@ -194,6 +194,14 @@ const AP_Scheduler::Task Copter::scheduler_tasks[] = {
 
 constexpr int8_t Copter::_failsafe_priorities[7];
 
+
+/**************************************************************************************************************
+*函数原型：void Copter::setup()
+*函数功能：数据初始化
+*修改日期：2018-1-30
+*修改作者：cihang_uav
+*备注信息：
+****************************************************************************************************************/
 void Copter::setup()
 {
     // Load the default values of variables listed in var_info[]s
@@ -208,14 +216,26 @@ void Copter::setup()
     scheduler.init(&scheduler_tasks[0], ARRAY_SIZE(scheduler_tasks), MASK_LOG_PM);
 }
 
+/**************************************************************************************************************
+*函数原型：void Copter::setup()
+*函数功能：数据初始化
+*修改日期：2018-1-30
+*修改作者：cihang_uav
+*备注信息：
+****************************************************************************************************************/
 void Copter::loop()
 {
     scheduler.loop();
     G_Dt = scheduler.get_last_loop_time_s();
 }
 
-
-// Main loop - 400hz
+/**************************************************************************************************************
+*函数原型：void Copter::fast_loop()
+*函数功能：快速循环初始化，运行周期是2.5ms
+*修改日期：2018-1-30
+*修改作者：cihang_uav
+*备注信息：Main loop - 400hz
+****************************************************************************************************************/
 void Copter::fast_loop()
 {
     // update INS immediately to get current gyro data populated
@@ -261,9 +281,13 @@ void Copter::fast_loop()
         Log_Sensor_Health();
     }
 }
-
-// rc_loops - reads user input from transmitter/receiver
-// called at 100hz
+/**************************************************************************************************************
+*函数原型：void Copter::rc_loop()
+*函数功能：遥控器数据初始化
+*修改日期：2018-1-30
+*修改作者：cihang_uav
+*备注信息：rc_loops - reads user input from transmitter/receiver called at 100hz
+****************************************************************************************************************/
 void Copter::rc_loop()
 {
     // Read radio and 3-position switch on radio
@@ -272,8 +296,14 @@ void Copter::rc_loop()
     read_control_switch();
 }
 
-// throttle_loop - should be run at 50 hz
-// ---------------------------
+/**************************************************************************************************************
+*函数原型：void Copter::throttle_loop()
+*函数功能：更新油门值
+*修改日期：2018-1-30
+*修改作者：cihang_uav
+*备注信息：throttle_loop - should be run at 50 hz
+****************************************************************************************************************/
+
 void Copter::throttle_loop()
 {
     // update throttle_low_comp value (controls priority of throttle vs attitude control)
@@ -294,8 +324,13 @@ void Copter::throttle_loop()
     update_ground_effect_detector();
 }
 
-// update_batt_compass - read battery and compass
-// should be called at 10hz
+/**************************************************************************************************************
+*函数原型：void Copter::update_batt_compass(void)
+*函数功能：更新电池和罗盘信息
+*修改日期：2018-1-30
+*修改作者：cihang_uav
+*备注信息：update_batt_compass - read battery and compass should be called at 10hz
+****************************************************************************************************************/
 void Copter::update_batt_compass(void)
 {
     // read battery before compass because it may be used for motor interference compensation
@@ -312,18 +347,29 @@ void Copter::update_batt_compass(void)
         }
     }
 }
+/**************************************************************************************************************
+*函数原型：void Copter::fourhundred_hz_logging()
+*函数功能：
+*修改日期：2018-1-30
+*修改作者：cihang_uav
+*备注信息：Full rate logging of attitude, rate and pid loops should be run at 400hz
+****************************************************************************************************************/
 
-// Full rate logging of attitude, rate and pid loops
-// should be run at 400hz
 void Copter::fourhundred_hz_logging()
 {
-    if (should_log(MASK_LOG_ATTITUDE_FAST)) {
+    if (should_log(MASK_LOG_ATTITUDE_FAST))
+    {
         Log_Write_Attitude();
     }
 }
+/**************************************************************************************************************
+*函数原型：void Copter::ten_hz_logging_loop()
+*函数功能：10HZ函数
+*修改日期：2018-1-30
+*修改作者：cihang_uav
+*备注信息：ten_hz_logging_loop should be run at 10hz
+****************************************************************************************************************/
 
-// ten_hz_logging_loop
-// should be run at 10hz
 void Copter::ten_hz_logging_loop()
 {
     // log attitude data if we're not already logging at the higher rate
@@ -363,7 +409,13 @@ void Copter::ten_hz_logging_loop()
 #endif
 }
 
-// twentyfive_hz_logging - should be run at 25hz
+/**************************************************************************************************************
+*函数原型：void Copter::twentyfive_hz_logging()
+*函数功能：25Hz函数
+*修改日期：2018-1-30
+*修改作者：cihang_uav
+*备注信息：twentyfive_hz_logging - should be run at 25hz
+****************************************************************************************************************/
 void Copter::twentyfive_hz_logging()
 {
 #if HIL_MODE != HIL_MODE_DISABLED
@@ -387,8 +439,14 @@ void Copter::twentyfive_hz_logging()
     Log_Write_Precland();
 #endif
 }
+/**************************************************************************************************************
+*函数原型：void Copter::three_hz_loop()
+*函数功能：3.3HZ
+*修改日期：2018-1-30
+*修改作者：cihang_uav
+*备注信息：three_hz_loop - 3.3hz loop
+****************************************************************************************************************/
 
-// three_hz_loop - 3.3hz loop
 void Copter::three_hz_loop()
 {
     // check if we've lost contact with the ground station
@@ -412,10 +470,17 @@ void Copter::three_hz_loop()
     tuning();
 }
 
-// one_hz_loop - runs at 1Hz
+/**************************************************************************************************************
+*函数原型：void Copter::one_hz_loop()
+*函数功能：1s运行函数
+*修改日期：2018-1-30
+*修改作者：cihang_uav
+*备注信息：one_hz_loop - runs at 1Hz
+****************************************************************************************************************/
 void Copter::one_hz_loop()
 {
-    if (should_log(MASK_LOG_ANY)) {
+    if (should_log(MASK_LOG_ANY))
+    {
         Log_Write_Data(DATA_AP_STATE, ap.value);
     }
 
@@ -453,7 +518,13 @@ void Copter::one_hz_loop()
     update_sensor_status_flags();
 }
 
-// called at 50hz
+/**************************************************************************************************************
+*函数原型：void Copter::update_GPS(void)
+*函数功能：更新GPS信息
+*修改日期：2018-1-30
+*修改作者：cihang_uav
+*备注信息：called at 50hz
+****************************************************************************************************************/
 void Copter::update_GPS(void)
 {
     static uint32_t last_gps_reading[GPS_MAX_INSTANCES];   // time of last gps message
@@ -476,7 +547,13 @@ void Copter::update_GPS(void)
 #endif
     }
 }
-
+/**************************************************************************************************************
+*函数原型：void Copter::init_simple_bearing()
+*函数功能：初始化简单模式朝向
+*修改日期：2018-1-30
+*修改作者：cihang_uav
+*备注信息：
+****************************************************************************************************************/
 void Copter::init_simple_bearing()
 {
     // capture current cos_yaw and sin_yaw values
@@ -493,8 +570,14 @@ void Copter::init_simple_bearing()
         Log_Write_Data(DATA_INIT_SIMPLE_BEARING, ahrs.yaw_sensor);
     }
 }
+/**************************************************************************************************************
+*函数原型：void Copter::update_simple_mode(void)
+*函数功能：更新简单模式
+*修改日期：2018-1-30
+*修改作者：cihang_uav
+*备注信息：update_simple_mode - rotates pilot input if we are in simple mode
+****************************************************************************************************************/
 
-// update_simple_mode - rotates pilot input if we are in simple mode
 void Copter::update_simple_mode(void)
 {
     float rollx, pitchx;
@@ -521,9 +604,14 @@ void Copter::update_simple_mode(void)
     channel_roll->set_control_in(rollx*ahrs.cos_yaw() + pitchx*ahrs.sin_yaw());
     channel_pitch->set_control_in(-rollx*ahrs.sin_yaw() + pitchx*ahrs.cos_yaw());
 }
-
-// update_super_simple_bearing - adjusts simple bearing based on location
-// should be called after home_bearing has been updated
+/**************************************************************************************************************
+*函数原型：void Copter::update_super_simple_bearing(bool force_update)
+*函数功能：更新超级模式
+*修改日期：2018-1-30
+*修改作者：cihang_uav
+*备注信息：update_super_simple_bearing - adjusts simple bearing based on location
+*        should be called after home_bearing has been updated
+****************************************************************************************************************/
 void Copter::update_super_simple_bearing(bool force_update)
 {
     if (!force_update) {
@@ -548,6 +636,13 @@ void Copter::update_super_simple_bearing(bool force_update)
     super_simple_sin_yaw = sinf(angle_rad);
 }
 
+/**************************************************************************************************************
+*函数原型：void Copter::read_AHRS(void)
+*函数功能：读取姿态信息
+*修改日期：2018-1-30
+*修改作者：cihang_uav
+*备注信息：
+****************************************************************************************************************/
 void Copter::read_AHRS(void)
 {
     // Perform IMU calculations and get attitude info
@@ -561,16 +656,27 @@ void Copter::read_AHRS(void)
     ahrs.update(true);
 }
 
-// read baro and log control tuning
+/**************************************************************************************************************
+*函数原型：void Copter::update_altitude()
+*函数功能：读取气压和控制循环
+*修改日期：2018-1-30
+*修改作者：cihang_uav
+*备注信息：read baro and log control tuning
+****************************************************************************************************************/
 void Copter::update_altitude()
 {
     // read in baro altitude
     read_barometer();
 
     // write altitude info to dataflash logs
-    if (should_log(MASK_LOG_CTUN)) {
+    if (should_log(MASK_LOG_CTUN))
+    {
         Log_Write_Control_Tuning();
     }
 }
 
 AP_HAL_MAIN_CALLBACKS(&copter);
+/****************************************************************************************************************
+*                                      File-End
+*****************************************************************************************************************/
+ */

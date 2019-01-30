@@ -41,12 +41,13 @@
           2018-11-21:增加IIC4做外部LED
           2019-1-7:上次.bin文件：git add -f (加上文件加目录)
           2019-1-29:
-          git init
-          git add README.md
-          git commit -m "first commit"
-          git remote rm origin
-          git remote add origin https://github.com/UAVcihang/Copter_3.6.5_master.git
-          git push -u origin +master 
+                    git init
+                    git add README.md
+                    git commit -m "first commit"
+                    git remote rm origin
+                    git remote add origin https://github.com/UAVcihang/Copter_3.6.5_master.git
+                    git push -u origin +master 
+          2019-1-30:添加歌尔气压计SPL06—001驱动
 *************************************************************************************************************************/
 [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/ArduPilot/ardupilot?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
