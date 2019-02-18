@@ -837,9 +837,11 @@ void NavEKF2_core::CovariancePrediction()
     for (uint8_t i= 0; i<=8;  i++) processNoise[i] = 0.0f;
     for (uint8_t i=9; i<=11; i++) processNoise[i] = dAngBiasSigma;
     for (uint8_t i=12; i<=14; i++) processNoise[i] = dAngScaleSigma;
-    if (expectGndEffectTakeoff) {
+    if (expectGndEffectTakeoff)
+    {
         processNoise[15] = 0.0f;
-    } else {
+    } else
+    {
         processNoise[15] = dVelBiasSigma;
     }
     for (uint8_t i=16; i<=18; i++) processNoise[i] = magEarthSigma;

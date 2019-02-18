@@ -641,12 +641,14 @@ void NavEKF2_core::FuseVelPosNED()
                 else if (obsIndex == 3 || obsIndex == 4) {
                     innovVelPos[obsIndex] = stateStruct.position[obsIndex-3] - velPosObs[obsIndex];
                     R_OBS[obsIndex] *= sq(gpsNoiseScaler);
-                } else if (obsIndex == 5) {
+                } else if (obsIndex == 5)
+                {
                     innovVelPos[obsIndex] = stateStruct.position[obsIndex-3] - velPosObs[obsIndex];
                     const float gndMaxBaroErr = 4.0f;
                     const float gndBaroInnovFloor = -0.5f;
 
-                    if(getTouchdownExpected() && activeHgtSource == HGT_SOURCE_BARO) {
+                    if(getTouchdownExpected() && activeHgtSource == HGT_SOURCE_BARO)
+                    {
                         // when a touchdown is expected, floor the barometer innovation at gndBaroInnovFloor
                         // constrain the correction between 0 and gndBaroInnovFloor+gndMaxBaroErr
                         // this function looks like this:
@@ -855,14 +857,16 @@ void NavEKF2_core::selectHeightForFusion()
     }
 
     // if there is new baro data to fuse, calculate filtered baro data required by other processes
-    if (baroDataToFuse) {
+    if (baroDataToFuse)
+    {
         // calculate offset to baro data that enables us to switch to Baro height use during operation
         if  (activeHgtSource != HGT_SOURCE_BARO) {
             calcFiltBaroOffset();
         }
         // filtered baro data used to provide a reference for takeoff
         // it is is reset to last height measurement on disarming in performArmingChecks()
-        if (!getTakeoffExpected()) {
+        if (!getTakeoffExpected())
+        {
             const float gndHgtFiltTC = 0.5f;
             const float dtBaro = frontend->hgtAvg_ms*1.0e-3f;
             float alpha = constrain_float(dtBaro / (dtBaro+gndHgtFiltTC),0.0f,1.0f);
@@ -924,15 +928,18 @@ void NavEKF2_core::selectHeightForFusion()
         // set the observation noise
         posDownObsNoise = sq(constrain_float(frontend->_baroAltNoise, 0.1f, 10.0f));
         // reduce weighting (increase observation noise) on baro if we are likely to be in ground effect
-        if (getTakeoffExpected() || getTouchdownExpected()) {
+        if (getTakeoffExpected() || getTouchdownExpected())
+        {
             posDownObsNoise *= frontend->gndEffectBaroScaler;
         }
         // If we are in takeoff mode, the height measurement is limited to be no less than the measurement at start of takeoff
         // This prevents negative baro disturbances due to copter downwash corrupting the EKF altitude during initial ascent
-        if (motorsArmed && getTakeoffExpected()) {
+        if (motorsArmed && getTakeoffExpected())
+        {
             hgtMea = MAX(hgtMea, meaHgtAtTakeOff);
         }
-    } else {
+    } else
+    {
         fuseHgtData = false;
     }
 

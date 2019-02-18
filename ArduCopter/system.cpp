@@ -7,23 +7,44 @@
 *
 *****************************************************************************/
 
+
+/**************************************************************************************************************
+*函数原型：static void mavlink_delay_cb_static()
+*函数功能：数据初始化
+*修改日期：2019-2-18
+*修改作者：cihang_uav
+*备注信息：
+****************************************************************************************************************/
 static void mavlink_delay_cb_static()
 {
     copter.mavlink_delay_cb();
 }
 
-
+/**************************************************************************************************************
+*函数原型：static void failsafe_check_static()
+*函数功能：数据初始化
+*修改日期：2019-2-18
+*修改作者：cihang_uav
+*备注信息：
+****************************************************************************************************************/
 static void failsafe_check_static()
 {
     copter.failsafe_check();
 }
 
+/**************************************************************************************************************
+*函数原型：void Copter::init_ardupilot()
+*函数功能：数据初始化
+*修改日期：2019-2-18
+*修改作者：cihang_uav
+*备注信息：
+****************************************************************************************************************/
 void Copter::init_ardupilot()
 {
-    // initialise serial port
+    //初始化USB------------------initialise serial port
     serial_manager.init_console();
 
-    // init vehicle capabilties
+    //初始化车辆容量----init vehicle capabilties
     init_capabilities();
 
     hal.console->printf("\n\nInit %s"
@@ -33,35 +54,37 @@ void Copter::init_ardupilot()
 
     //
     // Report firmware version code expect on console (check of actual EEPROM format version is done in load_parameters function)
-    //
+    //报告无人机的版本
     report_version();
 
-    // load parameters from EEPROM
+    //加载EEPROM里面的参数-----load parameters from EEPROM
     load_parameters();
 
     // time per loop - this gets updated in the main loop() based on
     // actual loop rate
+    //计算loop所需要的时间
     G_Dt = 1.0 / scheduler.get_loop_rate_hz();
 
 #if STATS_ENABLED == ENABLED
     // initialise stats module
     g2.stats.init();
 #endif
-
+    //设置dataflash的log
     gcs().set_dataflash(&DataFlash);
 
-    // identify ourselves correctly with the ground station
+    //正确认识地面站---------- identify ourselves correctly with the ground station
     mavlink_system.sysid = g.sysid_this_mav;
     
-    // initialise serial ports
+    //初始化串行端口-----initialise serial ports
     serial_manager.init();
 
-    // setup first port early to allow BoardConfig to report errors
+    //尽快的初始化USB端口，尽可能报告错误----setup first port early to allow BoardConfig to report errors
     gcs().chan(0).setup_uart(serial_manager, AP_SerialManager::SerialProtocol_MAVLink, 0);
 
 
     // Register mavlink_delay_cb, which will run anytime you have
     // more than 5ms remaining in your call to hal.scheduler->delay
+    //注册mavlink_delay_cb函数，他将在任何时候运行调用hal.scheduler->delay延迟函数，超过5ms
     hal.scheduler->register_delay_callback(mavlink_delay_cb_static, 5);
     
     BoardConfig.init();
@@ -307,6 +330,9 @@ void Copter::init_ardupilot()
     // flag that initialisation has completed
     ap.initialised = true;
 }
+
+
+
 
 
 //******************************************************************************

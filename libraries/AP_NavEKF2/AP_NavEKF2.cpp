@@ -1124,8 +1124,10 @@ bool NavEKF2::getRangeBeaconDebug(int8_t instance, uint8_t &ID, float &rng, floa
 // causes the EKF to compensate for expected barometer errors due to ground effect
 void NavEKF2::setTakeoffExpected(bool val)
 {
-    if (core) {
-        for (uint8_t i=0; i<num_cores; i++) {
+    if (core)
+    {
+        for (uint8_t i=0; i<num_cores; i++)
+        {
             core[i].setTakeoffExpected(val);
         }
     }

@@ -78,12 +78,15 @@ GCS_MAVLINK::init(AP_HAL::UARTDriver *port, mavlink_channel_t mav_chan)
     initialised = true;
 }
 
+/******************************************************************************************************************************************
+*函数原型：void GCS_MAVLINK::setup_uart(const AP_SerialManager& serial_manager, AP_SerialManager::SerialProtocol protocol, uint8_t instance)
+*函数功能：数据初始化
+*修改日期：2019-2-18
+*修改作者：cihang_uav
+*备注信息：setup a UART, handling begin() and init()
+********************************************************************************************************************************************/
 
-/*
-  setup a UART, handling begin() and init()
- */
-void
-GCS_MAVLINK::setup_uart(const AP_SerialManager& serial_manager, AP_SerialManager::SerialProtocol protocol, uint8_t instance)
+void GCS_MAVLINK::setup_uart(const AP_SerialManager& serial_manager, AP_SerialManager::SerialProtocol protocol, uint8_t instance)
 {
     serialmanager_p = &serial_manager;
 
@@ -91,7 +94,8 @@ GCS_MAVLINK::setup_uart(const AP_SerialManager& serial_manager, AP_SerialManager
     
     AP_HAL::UARTDriver *uart;
     uart = serial_manager.find_serial(protocol, instance);
-    if (uart == nullptr) {
+    if (uart == nullptr)
+    {
         // return immediately if not found
         return;
     }
@@ -114,7 +118,8 @@ GCS_MAVLINK::setup_uart(const AP_SerialManager& serial_manager, AP_SerialManager
     uart->begin(115200);
     AP_HAL::UARTDriver::flow_control old_flow_control = uart->get_flow_control();
     uart->set_flow_control(AP_HAL::UARTDriver::FLOW_CONTROL_DISABLE);
-    for (uint8_t i=0; i<3; i++) {
+    for (uint8_t i=0; i<3; i++)
+    {
         hal.scheduler->delay(1);
         uart->write(0x30);
         uart->write(0x20);
@@ -151,12 +156,16 @@ GCS_MAVLINK::setup_uart(const AP_SerialManager& serial_manager, AP_SerialManager
         status->flags |= MAVLINK_STATUS_FLAG_OUT_MAVLINK1;
     }
 
-    if (chan == MAVLINK_COMM_0) {
+    if (chan == MAVLINK_COMM_0)
+    {
         // Always start with MAVLink1 on first port for now, to allow for recovery
         // after experiments with MAVLink2
         status->flags |= MAVLINK_STATUS_FLAG_OUT_MAVLINK1;
     }
 }
+
+
+
 
 
 /**
@@ -1355,15 +1364,32 @@ void GCS::data_stream_send()
     }
 }
 
+/**************************************************************************************************************
+*函数原型：void GCS::update(void)
+*函数功能：数据更新
+*修改日期：2019-2-18
+*修改作者：cihang_uav
+*备注信息：look for incoming commands on the GCS links
+****************************************************************************************************************/
 void GCS::update(void)
 {
-    for (uint8_t i=0; i<num_gcs(); i++) {
-        if (chan(i).initialised) {
-            chan(i).update();
+    for (uint8_t i=0; i<num_gcs(); i++)
+    {
+        if (chan(i).initialised) //通道初始化，这里主要可以选择设置，是采用串口，还是USB进行数据通信
+        {
+            chan(i).update(); //通道更新
         }
     }
 }
 
+
+/**************************************************************************************************************
+*函数原型：void GCS::send_mission_item_reached_message(uint16_t mission_index)
+*函数功能：数据更新
+*修改日期：2019-2-18
+*修改作者：cihang_uav
+*备注信息：look for incoming commands on the GCS links
+****************************************************************************************************************/
 void GCS::send_mission_item_reached_message(uint16_t mission_index)
 {
     for (uint8_t i=0; i<num_gcs(); i++) {

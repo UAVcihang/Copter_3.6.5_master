@@ -346,8 +346,10 @@ void AP_Notify::init(bool dummy)
 // main update function, called at 50Hz
 void AP_Notify::update(void)
 {
-    for (uint8_t i = 0; i < _num_devices; i++) {
-        if (_devices[i] != nullptr) {
+    for (uint8_t i = 0; i < _num_devices; i++)
+    {
+        if (_devices[i] != nullptr)
+        {
             _devices[i]->update();
         }
     }

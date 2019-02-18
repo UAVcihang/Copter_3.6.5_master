@@ -1581,13 +1581,19 @@ void GCS_MAVLINK_Copter::handleMessage(mavlink_message_t* msg)
     }     // end switch
 } // end handle mavlink
 
+/******************************************************************************************************************************************
+*函数原型：void Copter::mavlink_delay_cb()
+*函数功能：mavlink延迟回调函数
+*修改日期：2019-2-18
+*修改作者：cihang_uav
+*备注信息：a delay() callback that processes MAVLink packets. We set this as the
+*        callback in long running library initialisation routines to allow
+*        MAVLink to process packets while waiting for the initialisation to
+*        complete
+* 处理mavlink包的delay（）回调。我们将此设置为在长时间运行的库初始化例程中回调，以允许mavlink在等待初始化完成时处理数据包。
+********************************************************************************************************************************************/
 
-/*
- *  a delay() callback that processes MAVLink packets. We set this as the
- *  callback in long running library initialisation routines to allow
- *  MAVLink to process packets while waiting for the initialisation to
- *  complete
- */
+
 void Copter::mavlink_delay_cb()
 {
     static uint32_t last_1hz, last_50hz, last_5s;
@@ -1596,25 +1602,31 @@ void Copter::mavlink_delay_cb()
     DataFlash.EnableWrites(false);
 
     uint32_t tnow = millis();
-    if (tnow - last_1hz > 1000) {
+    if (tnow - last_1hz > 1000) //1s发送一次心跳包数据
+    {
         last_1hz = tnow;
         gcs_send_heartbeat();
         gcs().send_message(MSG_EXTENDED_STATUS1);
     }
-    if (tnow - last_50hz > 20) {
+    if (tnow - last_50hz > 20)//20ms发送led通知函数
+    {
         last_50hz = tnow;
         gcs_check_input();
         gcs_data_stream_send();
         gcs_send_deferred();
         notify.update();
     }
-    if (tnow - last_5s > 5000) {
+    if (tnow - last_5s > 5000) //5s发送初始化信息
+    {
         last_5s = tnow;
         gcs().send_text(MAV_SEVERITY_INFO, "Initialising APM");
     }
 
     DataFlash.EnableWrites(true);
 }
+
+
+
 
 /*
  *  send data streams in the given rate range on both links
@@ -1624,17 +1636,29 @@ void Copter::gcs_data_stream_send(void)
     gcs().data_stream_send();
 }
 
-/*
- *  look for incoming commands on the GCS links
- */
+/**************************************************************************************************************
+*函数原型：void Copter::gcs_check_input(void)
+*函数功能：读取近距离传感器数据
+*修改日期：2019-2-18
+*修改作者：cihang_uav
+*备注信息：look for incoming commands on the GCS links
+****************************************************************************************************************/
 void Copter::gcs_check_input(void)
 {
     gcs().update();
 }
 
-/*
-  return true if we will accept this packet. Used to implement SYSID_ENFORCE
- */
+
+
+
+/**************************************************************************************************************
+*函数原型：bool GCS_MAVLINK_Copter::accept_packet(const mavlink_status_t &status, mavlink_message_t &msg)
+*函数功能：读取近距离传感器数据
+*修改日期：2019-2-18
+*修改作者：cihang_uav
+*备注信息：return true if we will accept this packet. Used to implement SYSID_ENFORCE
+****************************************************************************************************************/
+
 bool GCS_MAVLINK_Copter::accept_packet(const mavlink_status_t &status, mavlink_message_t &msg)
 {
     if (!copter.g2.sysid_enforce) {

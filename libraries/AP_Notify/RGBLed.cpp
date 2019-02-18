@@ -261,41 +261,41 @@ void RGBLed::update_colours(void)
 
                       }
 
-//    	    // for compass calibration
-//        if(AP_Notify::flags.compass_cal_status != 0)
-//        {
-//        	switch(AP_Notify::flags.compass_cal_status)
-//        	{
-//        	case 1:
-//                // red on
-//                _red_des = brightness;
-//                _blue_des = brightness;
-//                _green_des = _led_off;
-//        		break;
-//        	case 2:
-//                // red on
-//                _red_des = brightness;
-//                _blue_des = _led_off;
-//                _green_des = brightness;
-//        		break;
-//        	case 3:
-//                // red on
-//                _red_des = _led_off;
-//                _blue_des = brightness;
-//                _green_des = brightness;
-//        		break;
-//        	case 4:
-//                // red on
-//                _red_des = brightness;
-//                _blue_des = _led_off;
-//                _green_des = _led_off;
-//        		break;
-//        	default:
-//        		break;
-//        	}
-//        	return;
-//        }
-//
+    	    // for compass calibration
+        if(AP_Notify::flags.compass_cal_status != 0)
+        {
+        	switch(AP_Notify::flags.compass_cal_status)
+        	{
+        	case 1:
+                // red on
+                _red_des = brightness;
+                _blue_des = brightness;
+                _green_des = _led_off;
+        		break;
+        	case 2:
+                // red on
+                _red_des = brightness;
+                _blue_des = _led_off;
+                _green_des = brightness;
+        		break;
+        	case 3:
+                // red on
+                _red_des = _led_off;
+                _blue_des = brightness;
+                _green_des = brightness;
+        		break;
+        	case 4:
+                // red on
+                _red_des = brightness;
+                _blue_des = _led_off;
+                _green_des = _led_off;
+        		break;
+        	default:
+        		break;
+        	}
+        	return;
+        }
+
 
 
 

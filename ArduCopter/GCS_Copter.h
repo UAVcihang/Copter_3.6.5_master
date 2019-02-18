@@ -22,6 +22,6 @@ public:
 
 private:
 
-    GCS_MAVLINK_Copter _chan[MAVLINK_COMM_NUM_BUFFERS];
+    GCS_MAVLINK_Copter _chan[MAVLINK_COMM_NUM_BUFFERS]; //最多支持4个通道数据
 
 };

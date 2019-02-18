@@ -72,7 +72,13 @@
  *  Requires modified version of Arduino, which can be found here: http://ardupilot.com/downloads/?category=6
  *
  */
-
+/**************************************************************************************************************
+*函数原型：函数头文件
+*函数功能：任务列表
+*修改日期：2019-2-18
+*修改作者：cihang_uav
+*备注信息：
+****************************************************************************************************************/
 #include "Copter.h"
 
 #define SCHED_TASK(func, rate_hz, max_time_micros) SCHED_TASK_CLASS(Copter, &copter, func, rate_hz, max_time_micros)
@@ -84,7 +90,7 @@
  */
 const AP_Scheduler::Task Copter::scheduler_tasks[] = {
     SCHED_TASK(rc_loop,              100,    130),
-    SCHED_TASK(throttle_loop,         50,     75),
+    SCHED_TASK(throttle_loop,         50,     75), //更新油门函数
     SCHED_TASK(update_GPS,            50,    200),
 #if OPTFLOW == ENABLED
     SCHED_TASK(update_optical_flow,  200,    160),
@@ -127,16 +133,16 @@ const AP_Scheduler::Task Copter::scheduler_tasks[] = {
 #if LOGGING_ENABLED == ENABLED
     SCHED_TASK(fourhundred_hz_logging,400,    50),
 #endif
-    SCHED_TASK_CLASS(AP_Notify,            &copter.notify,              update,          50,  90),
+    SCHED_TASK_CLASS(AP_Notify,            &copter.notify,              update,          50,  90), //更新LED通知信息
     SCHED_TASK(one_hz_loop,            1,    100),
     SCHED_TASK(ekf_check,             10,     75),
     SCHED_TASK(gpsglitch_check,       10,     50),
     SCHED_TASK(landinggear_update,    10,     75),
     SCHED_TASK(lost_vehicle_check,    10,     50),
-    SCHED_TASK(gcs_check_input,      400,    180),
-    SCHED_TASK(gcs_send_heartbeat,     1,    110),
-    SCHED_TASK(gcs_send_deferred,     50,    550),
-    SCHED_TASK(gcs_data_stream_send,  50,    550),
+    SCHED_TASK(gcs_check_input,      400,    180), //检测输入
+    SCHED_TASK(gcs_send_heartbeat,     1,    110), //发送心跳包信息
+    SCHED_TASK(gcs_send_deferred,     50,    550), //发送识别信息
+    SCHED_TASK(gcs_data_stream_send,  50,    550), //发送数据流
 #if MOUNT == ENABLED
     SCHED_TASK_CLASS(AP_Mount,             &copter.camera_mount,        update,          50,  75),
 #endif
@@ -306,12 +312,12 @@ void Copter::rc_loop()
 
 void Copter::throttle_loop()
 {
-    // update throttle_low_comp value (controls priority of throttle vs attitude control)
+    //更新油门低补偿值（优先控制油门与姿态）--- update throttle_low_comp value (controls priority of throttle vs attitude control)
     update_throttle_thr_mix();
 
-    // check auto_armed status
+    //检查无人机的自动上锁状态-----check auto_armed status
     update_auto_armed();
-
+    //直升机代码
 #if FRAME_CONFIG == HELI_FRAME
     // update rotor speed
     heli_update_rotor_speed_targets();
@@ -320,7 +326,7 @@ void Copter::throttle_loop()
     heli_update_landing_swash();
 #endif
 
-    // compensate for ground effect (if enabled)
+    // 弥补为地效影响----compensate for ground effect (if enabled)
     update_ground_effect_detector();
 }
 
@@ -679,4 +685,4 @@ AP_HAL_MAIN_CALLBACKS(&copter);
 /****************************************************************************************************************
 *                                      File-End
 *****************************************************************************************************************/
- */
+

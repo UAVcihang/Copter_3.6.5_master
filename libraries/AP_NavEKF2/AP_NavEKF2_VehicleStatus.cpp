@@ -404,7 +404,8 @@ void NavEKF2_core::detectFlight()
 // determine if a takeoff is expected so that we can compensate for expected barometer errors due to ground effect
 bool NavEKF2_core::getTakeoffExpected()
 {
-    if (expectGndEffectTakeoff && imuSampleTime_ms - takeoffExpectedSet_ms > frontend->gndEffectTimeout_ms) {
+    if (expectGndEffectTakeoff && imuSampleTime_ms - takeoffExpectedSet_ms > frontend->gndEffectTimeout_ms)
+    {
         expectGndEffectTakeoff = false;
     }
 

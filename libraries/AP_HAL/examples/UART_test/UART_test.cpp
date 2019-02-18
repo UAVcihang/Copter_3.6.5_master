@@ -18,7 +18,8 @@ const AP_HAL::HAL& hal = AP_HAL::get_HAL();
  */
 static void setup_uart(AP_HAL::UARTDriver *uart, const char *name)
 {
-    if (uart == nullptr) {
+    if (uart == nullptr)
+    {
         // that UART doesn't exist on this platform
         return;
     }
