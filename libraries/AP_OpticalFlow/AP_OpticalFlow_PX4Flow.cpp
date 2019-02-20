@@ -36,48 +36,70 @@ AP_OpticalFlow_PX4Flow::AP_OpticalFlow_PX4Flow(OpticalFlow &_frontend) :
 {
 }
 
+/**************************************************************************************************************
+*函数原型：AP_OpticalFlow_PX4Flow *AP_OpticalFlow_PX4Flow::detect(OpticalFlow &_frontend)
+*函数功能：识别光流传感器
+*修改日期：2019-2-18
+*修改作者：cihang_uav
+*备注信息：detect the device
+****************************************************************************************************************/
 
-// detect the device
 AP_OpticalFlow_PX4Flow *AP_OpticalFlow_PX4Flow::detect(OpticalFlow &_frontend)
 {
     AP_OpticalFlow_PX4Flow *sensor = new AP_OpticalFlow_PX4Flow(_frontend);
-    if (!sensor) {
+    if (!sensor)
+    {
         return nullptr;
     }
-    if (!sensor->setup_sensor()) {
+    if (!sensor->setup_sensor())
+    {
+    	hal.console->printf("***^^^***1234567\r\n");
         delete sensor;
         return nullptr;
     }
     return sensor;
 }
 
-/*
-  look for the sensor on different buses
- */
+/**************************************************************************************************************
+*函数原型：bool AP_OpticalFlow_PX4Flow::scan_buses(void)
+*函数功能：查看总线
+*修改日期：2019-2-18
+*修改作者：cihang_uav
+*备注信息： look for the sensor on different buses
+****************************************************************************************************************/
+
+
 bool AP_OpticalFlow_PX4Flow::scan_buses(void)
 {
     bool success = false;
     uint8_t retry_attempt = 0;
 
-    while (!success && retry_attempt < PX4FLOW_INIT_RETRIES) {
-        for (uint8_t bus = 0; bus < 3; bus++) {
+    while (!success && retry_attempt < PX4FLOW_INIT_RETRIES)
+    {
+    	hal.console->printf("***^^^***000\r\n");
+        for (uint8_t bus = 0; bus < 3; bus++)
+        {
     #ifdef HAL_OPTFLOW_PX4FLOW_I2C_BUS
             // only one bus from HAL
-            if (bus != HAL_OPTFLOW_PX4FLOW_I2C_BUS) {
+            if (bus != HAL_OPTFLOW_PX4FLOW_I2C_BUS)
+            {
                 continue;
             }
     #endif
             AP_HAL::OwnPtr<AP_HAL::Device> tdev = hal.i2c_mgr->get_device(bus, PX4FLOW_BASE_I2C_ADDR + get_address());
-            if (!tdev) {
+            if (!tdev)
+            {
                 continue;
             }
-            if (!tdev->get_semaphore()->take(HAL_SEMAPHORE_BLOCK_FOREVER)) {
+            if (!tdev->get_semaphore()->take(HAL_SEMAPHORE_BLOCK_FOREVER))
+            {
                 continue;
             }
             struct i2c_integral_frame frame;
             success = tdev->read_registers(REG_INTEGRAL_FRAME, (uint8_t *)&frame, sizeof(frame));
             tdev->get_semaphore()->give();
-            if (success) {
+            if (success)
+            {
                 printf("Found PX4Flow on bus %u\n", bus);
                 dev = std::move(tdev);
                 break;
@@ -88,13 +110,18 @@ bool AP_OpticalFlow_PX4Flow::scan_buses(void)
             hal.scheduler->delay(10);
         }
     }
+    hal.console->printf("success=%d\r\n",success);
     return success;
 }
+
+
 
 // setup the device
 bool AP_OpticalFlow_PX4Flow::setup_sensor(void)
 {
-    if (!scan_buses()) {
+    if (!scan_buses())
+    {
+    	hal.console->printf("***^^^***12345678\r\n");
         return false;
     }
     // read at 10Hz
@@ -117,9 +144,12 @@ void AP_OpticalFlow_PX4Flow::timer(void)
     }
     struct OpticalFlow::OpticalFlow_state state {};
     state.device_id = get_address();
-
-    if (frame.integration_timespan > 0) {
+//    hal.console->printf("state.device_id=%d\r\n",state.device_id);
+    if (frame.integration_timespan > 0)
+    {
         const Vector2f flowScaler = _flowScaler();
+//        hal.console->printf("state.device_id=%d\r\n",state.device_id);
+//        hal.console->printf("state.device_id=%d\r\n",state.device_id);
         float flowScaleFactorX = 1.0f + 0.001f * flowScaler.x;
         float flowScaleFactorY = 1.0f + 0.001f * flowScaler.y;
         float integralToRate = 1.0e6 / frame.integration_timespan;
@@ -129,6 +159,9 @@ void AP_OpticalFlow_PX4Flow::timer(void)
                                   frame.pixel_flow_y_integral * flowScaleFactorY) * 1.0e-4 * integralToRate;
         state.bodyRate = Vector2f(frame.gyro_x_rate_integral, frame.gyro_y_rate_integral) * 1.0e-4 * integralToRate;
         
+//        hal.console->printf("state.flowRate=%d\r\n",state.flowRate);
+//        hal.console->printf("state.bodyRate=%d\r\n",state.bodyRate);
+
         _applyYaw(state.flowRate);
         _applyYaw(state.bodyRate);
     }

@@ -607,32 +607,50 @@ void RangeFinder::init(void)
     }
 }
 
-/*
-  update RangeFinder state for all instances. This should be called at
-  around 10Hz by main loop
- */
+
+/**************************************************************************************************************
+*函数原型：void RangeFinder::update(void)
+*函数功能：数据更新
+*修改日期：2019-2-18
+*修改作者：cihang_uav
+*备注信息：update RangeFinder state for all instances. This should be called at
+         around 10Hz by main loop
+****************************************************************************************************************/
+
 void RangeFinder::update(void)
 {
-    for (uint8_t i=0; i<num_instances; i++) {
-        if (drivers[i] != nullptr) {
-            if (state[i].type == RangeFinder_TYPE_NONE) {
+    for (uint8_t i=0; i<num_instances; i++)
+    {
+        if (drivers[i] != nullptr)
+        {
+            if (state[i].type == RangeFinder_TYPE_NONE)
+            {
                 // allow user to disable a rangefinder at runtime
                 state[i].status = RangeFinder_NotConnected;
                 state[i].range_valid_count = 0;
                 continue;
             }
-            drivers[i]->update();
+            drivers[i]->update(); //调用数据更新函数
             drivers[i]->update_pre_arm_check();
         }
     }
 }
 
+/**************************************************************************************************************
+*函数原型：bool RangeFinder::_add_backend(AP_RangeFinder_Backend *backend)
+*函数功能：增加底层驱动
+*修改日期：2019-2-18
+*修改作者：cihang_uav
+*备注信息：
+****************************************************************************************************************/
 bool RangeFinder::_add_backend(AP_RangeFinder_Backend *backend)
 {
-    if (!backend) {
+    if (!backend)
+    {
         return false;
     }
-    if (num_instances == RANGEFINDER_MAX_INSTANCES) {
+    if (num_instances == RANGEFINDER_MAX_INSTANCES)
+    {
         AP_HAL::panic("Too many RANGERS backends");
     }
 
@@ -640,9 +658,15 @@ bool RangeFinder::_add_backend(AP_RangeFinder_Backend *backend)
     return true;
 }
 
-/*
-  detect if an instance of a rangefinder is connected. 
- */
+
+/**************************************************************************************************************
+*函数原型：void RangeFinder::detect_instance(uint8_t instance, uint8_t& serial_instance)
+*函数功能：识别驱动
+*修改日期：2019-2-20
+*修改作者：cihang_uav
+*备注信息：detect if an instance of a rangefinder is connected.
+****************************************************************************************************************/
+
 void RangeFinder::detect_instance(uint8_t instance, uint8_t& serial_instance)
 {
     enum RangeFinder_Type _type = (enum RangeFinder_Type)state[instance].type.get();
@@ -862,6 +886,13 @@ AP_RangeFinder_Backend *RangeFinder::find_instance(enum Rotation orientation) co
     return nullptr;
 }
 
+/**************************************************************************************************************
+*函数原型：uint16_t RangeFinder::distance_cm_orient(enum Rotation orientation) const
+*函数功能：从底端获取数据
+*修改日期：2019-2-20
+*修改作者：cihang_uav
+*备注信息：
+****************************************************************************************************************/
 uint16_t RangeFinder::distance_cm_orient(enum Rotation orientation) const
 {
     AP_RangeFinder_Backend *backend = find_instance(orientation);
@@ -871,6 +902,13 @@ uint16_t RangeFinder::distance_cm_orient(enum Rotation orientation) const
     return backend->distance_cm();
 }
 
+/**************************************************************************************************************
+*函数原型：uint16_t RangeFinder::voltage_mv_orient(enum Rotation orientation) const
+*函数功能：
+*修改日期：2019-2-20
+*修改作者：cihang_uav
+*备注信息：
+****************************************************************************************************************/
 uint16_t RangeFinder::voltage_mv_orient(enum Rotation orientation) const
 {
     AP_RangeFinder_Backend *backend = find_instance(orientation);

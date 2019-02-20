@@ -32,24 +32,33 @@ AP_RangeFinder_NRA24::AP_RangeFinder_NRA24(RangeFinder::RangeFinder_State &_stat
 	 //_dist_filted_cm.set_cutoff_frequency(0.1f, cut_freq);
 }
 
-
+/**************************************************************************************************************
+*函数原型：void Copter::read_rangefinder(void)
+*函数功能：读取近距离传感器数据
+*修改日期：2019-2-18
+*修改作者：cihang_uav
+*备注信息：return rangefinder altitude in centimeters
+****************************************************************************************************************/
 bool AP_RangeFinder_NRA24::detect(AP_SerialManager &serial_manager,uint8_t serial_instance)
 {
 
 	return serial_manager.find_serial(AP_SerialManager::SerialProtocol_NRA24, serial_instance) != nullptr;
 }
 
-
-// read - return last value measured by sensor
+/**************************************************************************************************************
+*函数原型：bool AP_RangeFinder_NRA24::get_reading(uint16_t &reading_cm)
+*函数功能：读取传感器数据
+*修改日期：2019-2-18
+*修改作者：cihang_uav
+*备注信息：read - return last value measured by sensor
+****************************************************************************************************************/
 bool AP_RangeFinder_NRA24::get_reading(uint16_t &reading_cm)
 {
-
 	uint32_t sum = 0;
 	uint16_t count = 0;
-	//uint16_t dist = 0;
-	//AP_HAL::UARTDriver *port = hal.uartE;
 
-    if (uart == nullptr) {
+    if (uart == nullptr)
+    {
         return false;
     }
 
@@ -84,7 +93,8 @@ bool AP_RangeFinder_NRA24::get_reading(uint16_t &reading_cm)
         	break;
 
         case NRA24_GOT_MSGID1:
-        	if(c == 0x07){
+        	if(c == 0x07)
+        	{
         		_parse_status = NRA24_GOT_MSGID2;
         		linebuf_len = 0;
         	}
@@ -96,7 +106,8 @@ bool AP_RangeFinder_NRA24::get_reading(uint16_t &reading_cm)
 
         case NRA24_GOT_MSGID2:
         	linebuf[linebuf_len++] = c;
-        	if(linebuf_len == 8){
+        	if(linebuf_len == 8)
+        	{
         		dist = (uint16_t)(linebuf[2] * 0x100 + linebuf[3]);
         		snr = linebuf[7] - 127;
         		rcs = linebuf[1] * 0.5 - 50;
@@ -141,17 +152,25 @@ bool AP_RangeFinder_NRA24::get_reading(uint16_t &reading_cm)
     return true;
 }
 
-
-/*
-   update the state of the sensor
-*/
+/**************************************************************************************************************
+*函数原型：void AP_RangeFinder_NRA24::update(void)
+*函数功能：更新传感器数据
+*修改日期：2019-2-18
+*修改作者：cihang_uav
+*备注信息：update the state of the sensor
+****************************************************************************************************************/
 void AP_RangeFinder_NRA24::update(void)
 {
-    if (get_reading(state.distance_cm)) {
+    if (get_reading(state.distance_cm))  //获取数据state.distance_cm
+    {
         // update range_valid state based on distance measured
         last_reading_ms = AP_HAL::millis();
         update_status();
-    } else if (AP_HAL::millis() - last_reading_ms > 200) {
+    } else if (AP_HAL::millis() - last_reading_ms > 200)
+    {
         set_status(RangeFinder::RangeFinder_NoData);
     }
 }
+/***************************************************************************************************************
+*
+***************************************************************************************************************/

@@ -8,7 +8,8 @@
   without rangefinder
  */
 
-const AP_Param::GroupInfo Copter::ModeFlowHold::var_info[] = {
+const AP_Param::GroupInfo Copter::ModeFlowHold::var_info[] =
+{
     // @Param: _XY_P
     // @DisplayName: FlowHold P gain
     // @Description: FlowHold (horizontal) P gain.
@@ -74,26 +75,37 @@ Copter::ModeFlowHold::ModeFlowHold(void) : Mode()
 
 #define CONTROL_FLOWHOLD_EARTH_FRAME 0
 
-// flowhold_init - initialise flowhold controller
+
+/**************************************************************************************************************
+*函数原型：bool Copter::ModeFlowHold::init(bool ignore_checks)
+*函数功能：光流控制初始化
+*修改日期：2019-2-20
+*修改作者：cihang_uav
+*备注信息：flowhold_init - initialise flowhold controller
+****************************************************************************************************************/
+
 bool Copter::ModeFlowHold::init(bool ignore_checks)
 {
 #if FRAME_CONFIG == HELI_FRAME
     // do not allow helis to enter Flow Hold if the Rotor Runup is not complete
-    if (!ignore_checks && !motors->rotor_runup_complete()){
+    if (!ignore_checks && !motors->rotor_runup_complete())
+    {
         return false;
     }
 #endif
-
-    if (!copter.optflow.enabled() || !copter.optflow.healthy()) {
+    //光流必须使能，并且是健康的
+    if (!copter.optflow.enabled() || !copter.optflow.healthy())
+    {
         return false;
     }
 
-    // initialize vertical speeds and leash lengths
+    //初始化垂直速度和皮带长度---- initialize vertical speeds and leash lengths
     copter.pos_control->set_speed_z(-get_pilot_speed_dn(), copter.g.pilot_speed_up);
     copter.pos_control->set_accel_z(copter.g.pilot_accel_z);
 
-    // initialise position and desired velocity
-    if (!copter.pos_control->is_active_z()) {
+    //初始化位置和目标速度----- initialise position and desired velocity
+    if (!copter.pos_control->is_active_z())
+    {
         copter.pos_control->set_alt_target_to_current_alt();
         copter.pos_control->set_desired_velocity_z(copter.inertial_nav.get_velocity_z());
     }
@@ -113,9 +125,14 @@ bool Copter::ModeFlowHold::init(bool ignore_checks)
     return true;
 }
 
-/*
-  calculate desired attitude from flow sensor. Called when flow sensor is healthy
- */
+/**************************************************************************************************************
+*函数原型：void Copter::ModeFlowHold::flowhold_flow_to_angle(Vector2f &bf_angles, bool stick_input)
+*函数功能：光流函数更新
+*修改日期：2019-2-18
+*修改作者：cihang_uav
+*备注信息：calculate desired attitude from flow sensor. Called when flow sensor is healthy
+****************************************************************************************************************/
+
 void Copter::ModeFlowHold::flowhold_flow_to_angle(Vector2f &bf_angles, bool stick_input)
 {
     uint32_t now = AP_HAL::millis();
@@ -213,8 +230,14 @@ void Copter::ModeFlowHold::flowhold_flow_to_angle(Vector2f &bf_angles, bool stic
     }
 }
 
-// flowhold_run - runs the flowhold controller
-// should be called at 100hz or more
+/**************************************************************************************************************
+*函数原型：void Copter::ModeFlowHold::run()
+*函数功能：光流函数更新
+*修改日期：2019-2-18
+*修改作者：cihang_uav
+*备注信息：flowhold_run - runs the flowhold controller should be called at 100hz or more
+****************************************************************************************************************/
+
 void Copter::ModeFlowHold::run()
 {
     FlowHoldModeState flowhold_state;
@@ -230,7 +253,8 @@ void Copter::ModeFlowHold::run()
     copter.update_simple_mode();
 
     // check for filter change
-    if (!is_equal(flow_filter.get_cutoff_freq(), flow_filter_hz.get())) {
+    if (!is_equal(flow_filter.get_cutoff_freq(), flow_filter_hz.get()))
+    {
         flow_filter.set_cutoff_frequency(flow_filter_hz.get());
     }
 
@@ -365,6 +389,14 @@ void Copter::ModeFlowHold::run()
     }
 }
 
+
+/**************************************************************************************************************
+*函数原型：void OpticalFlow::update(void)
+*函数功能：光流函数更新
+*修改日期：2019-2-18
+*修改作者：cihang_uav
+*备注信息：
+****************************************************************************************************************/
 /*
   update height estimate using integrated accelerometer ratio with optical flow
  */

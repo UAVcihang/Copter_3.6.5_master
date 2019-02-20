@@ -162,11 +162,19 @@ const Vector2f* AP_Proximity_Backend::get_boundary_points(uint16_t& num_points) 
     return _boundary_point;
 }
 
-// initialise the boundary and sector_edge_vector array used for object avoidance
-//   should be called if the sector_middle_deg or _setor_width_deg arrays are changed
+/**************************************************************************************************************
+*函数原型：void AP_Proximity_Backend::init_boundary()
+*函数功能：初始化边界点
+*修改日期：2019-2-18
+*修改作者：cihang_uav
+*备注信息：initialise the boundary and sector_edge_vector array used for object avoidance
+*        should be called if the sector_middle_deg or _setor_width_deg arrays are changed
+****************************************************************************************************************/
+
 void AP_Proximity_Backend::init_boundary()
 {
-    for (uint8_t sector=0; sector < _num_sectors; sector++) {
+    for (uint8_t sector=0; sector < _num_sectors; sector++)
+    {
         float angle_rad = radians((float)_sector_middle_deg[sector]+(float)_sector_width_deg[sector]/2.0f);
         _sector_edge_vector[sector].x = cosf(angle_rad) * 100.0f;
         _sector_edge_vector[sector].y = sinf(angle_rad) * 100.0f;
@@ -174,42 +182,58 @@ void AP_Proximity_Backend::init_boundary()
     }
 }
 
-// update boundary points used for object avoidance based on a single sector's distance changing
-//   the boundary points lie on the line between sectors meaning two boundary points may be updated based on a single sector's distance changing
-//   the boundary point is set to the shortest distance found in the two adjacent sectors, this is a conservative boundary around the vehicle
+
+/**********************************************************************************************************************************************************
+*函数原型：void AP_Proximity_Backend::update_boundary_for_sector(uint8_t sector)*函数功能：更新近距离传感器
+*修改日期：2019-2-18
+*修改作者：cihang_uav
+*备注信息：update boundary points used for object avoidance based on a single sector's distance changing
+         the boundary points lie on the line between sectors meaning two boundary points may be updated based on a single sector's distance changing
+         the boundary point is set to the shortest distance found in the two adjacent sectors, this is a conservative boundary around the vehicle
+************************************************************************************************************************************************************/
+
 void AP_Proximity_Backend::update_boundary_for_sector(uint8_t sector)
 {
-    // sanity check
-    if (sector >= _num_sectors) {
+    //是否是有效的区域----sanity check
+    if (sector >= _num_sectors)
+    {
         return;
     }
 
-    // find adjacent sector (clockwise)
+    //查找相邻的扇区（顺时针）find adjacent sector (clockwise)
     uint8_t next_sector = sector + 1;
-    if (next_sector >= _num_sectors) {
+    if (next_sector >= _num_sectors)
+    {
         next_sector = 0;
     }
 
-    // boundary point lies on the line between the two sectors at the shorter distance found in the two sectors
+    //边界点位于两个扇区之间的界限上，在两个扇区中发现的距离较短。
+    //boundary point lies on the line between the two sectors at the shorter distance found in the two sectors
     float shortest_distance = PROXIMITY_BOUNDARY_DIST_DEFAULT;
-    if (_distance_valid[sector] && _distance_valid[next_sector]) {
+    if (_distance_valid[sector] && _distance_valid[next_sector])
+    {
         shortest_distance = MIN(_distance[sector], _distance[next_sector]);
-    } else if (_distance_valid[sector]) {
+    } else if (_distance_valid[sector])
+    {
         shortest_distance = _distance[sector];
-    } else if (_distance_valid[next_sector]) {
+    } else if (_distance_valid[next_sector])
+    {
         shortest_distance = _distance[next_sector];
     }
-    if (shortest_distance < PROXIMITY_BOUNDARY_DIST_MIN) {
+    if (shortest_distance < PROXIMITY_BOUNDARY_DIST_MIN)
+    {
         shortest_distance = PROXIMITY_BOUNDARY_DIST_MIN;
     }
-    _boundary_point[sector] = _sector_edge_vector[sector] * shortest_distance;
+    _boundary_point[sector] = _sector_edge_vector[sector] * shortest_distance; //获取边界点避障距离
 
     // if the next sector (clockwise) has an invalid distance, set boundary to create a cup like boundary
-    if (!_distance_valid[next_sector]) {
+    //假如下一个扇区（顺时针）有无效距离，设置边界以创建环形边界
+    if (!_distance_valid[next_sector])
+    {
         _boundary_point[next_sector] = _sector_edge_vector[next_sector] * shortest_distance;
     }
 
-    // repeat for edge between sector and previous sector
+    //重复扇区和先前扇区之间的边缘-----repeat for edge between sector and previous sector
     uint8_t prev_sector = (sector == 0) ? _num_sectors-1 : sector-1;
     shortest_distance = PROXIMITY_BOUNDARY_DIST_DEFAULT;
     if (_distance_valid[prev_sector] && _distance_valid[sector]) {
@@ -228,11 +252,23 @@ void AP_Proximity_Backend::update_boundary_for_sector(uint8_t sector)
     }
 }
 
-// set status and update valid count
+
+
+
+/**************************************************************************************************************
+*函数原型：void AP_Proximity_Backend::set_status(AP_Proximity::Proximity_Status status)
+*函数功能：设定状态和更新有效计数
+*修改日期：2019-2-20
+*修改作者：cihang_uav
+*备注信息：set status and update valid count
+****************************************************************************************************************/
+
 void AP_Proximity_Backend::set_status(AP_Proximity::Proximity_Status status)
 {
     state.status = status;
 }
+
+
 
 bool AP_Proximity_Backend::convert_angle_to_sector(float angle_degrees, uint8_t &sector) const
 {

@@ -46,38 +46,42 @@ void Copter::init_rangefinder(void)
 void Copter::read_rangefinder(void)
 {
 #if RANGEFINDER_ENABLED == ENABLED
-    rangefinder.update();
+    rangefinder.update(); //获取数据state.distance_cm
 
-    if (rangefinder.num_sensors() > 0 &&
-        should_log(MASK_LOG_CTUN)) {
+    if (rangefinder.num_sensors() > 0 && should_log(MASK_LOG_CTUN))
+    {
         DataFlash.Log_Write_RFND(rangefinder);
     }
 
     rangefinder_state.alt_healthy = ((rangefinder.status_orient(ROTATION_PITCH_270) == RangeFinder::RangeFinder_Good) && (rangefinder.range_valid_count_orient(ROTATION_PITCH_270) >= RANGEFINDER_HEALTH_MAX));
 
-    int16_t temp_alt = rangefinder.distance_cm_orient(ROTATION_PITCH_270);
+    int16_t temp_alt = rangefinder.distance_cm_orient(ROTATION_PITCH_270); //从低端获取数据
 
  #if RANGEFINDER_TILT_CORRECTION == ENABLED
-    // correct alt for angle of the rangefinder
+    //通过测距仪更正高度------- correct alt for angle of the rangefinder
     temp_alt = (float)temp_alt * MAX(0.707f, ahrs.get_rotation_body_to_ned().c.z);
  #endif
 
-    rangefinder_state.alt_cm = temp_alt;
+    rangefinder_state.alt_cm = temp_alt; //获取高度信息
 
-    // filter rangefinder for use by AC_WPNav
+    //对高度信息进行滤波，将会被AC_WPNav使用------- filter rangefinder for use by AC_WPNav
     uint32_t now = AP_HAL::millis();
 
-    if (rangefinder_state.alt_healthy) {
-        if (now - rangefinder_state.last_healthy_ms > RANGEFINDER_TIMEOUT_MS) {
+    if (rangefinder_state.alt_healthy)
+    {
+        if (now - rangefinder_state.last_healthy_ms > RANGEFINDER_TIMEOUT_MS)
+        {
             // reset filter if we haven't used it within the last second
             rangefinder_state.alt_cm_filt.reset(rangefinder_state.alt_cm);
-        } else {
+        } else
+        {
             rangefinder_state.alt_cm_filt.apply(rangefinder_state.alt_cm, 0.05f);
         }
         rangefinder_state.last_healthy_ms = now;
     }
 
-    // send rangefinder altitude and health to waypoint navigation library
+    //向航点导航库发送测距仪高度和健康信息----------send rangefinder altitude and health to waypoint navigation library
+    //最终获取数据 _rangefinder_alt_cm
     wp_nav->set_rangefinder_alt(rangefinder_state.enabled, rangefinder_state.alt_healthy, rangefinder_state.alt_cm_filt.get());
 
 #else
@@ -131,7 +135,8 @@ void Copter::rpm_update(void)
 // initialise compass
 void Copter::init_compass()
 {
-    if (!g.compass_enabled) {
+    if (!g.compass_enabled)
+    {
         return;
     }
 
@@ -173,13 +178,13 @@ void Copter::compass_accumulate(void)
     }
 }
 /**************************************************************************************************************
-*函数原型：函数头文件
+*函数原型：void Copter::init_optflow()
 *函数功能：任务列表
 *修改日期：2019-2-18
 *修改作者：cihang_uav
-*备注信息：
+*备注信息：initialise optical flow sensor
 ****************************************************************************************************************/
-// initialise optical flow sensor
+
 void Copter::init_optflow()
 {
 #if OPTFLOW == ENABLED
@@ -192,31 +197,33 @@ void Copter::init_optflow()
 *函数功能：任务列表
 *修改日期：2019-2-18
 *修改作者：cihang_uav
-*备注信息：
+*备注信息：called at 200hz
 ****************************************************************************************************************/
-// called at 200hz
 #if OPTFLOW == ENABLED
 void Copter::update_optical_flow(void)
 {
     static uint32_t last_of_update = 0;
 
-    // exit immediately if not enabled
-    if (!optflow.enabled()) {
+    //如果没有使能，立即退出------exit immediately if not enabled
+    if (!optflow.enabled())
+    {
         return;
     }
 
-    // read from sensor
+    //从传感器读取数据-----read from sensor
     optflow.update();
 
     // write to log and send to EKF if new data has arrived
-    if (optflow.last_update() != last_of_update) {
+    if (optflow.last_update() != last_of_update)
+    {
         last_of_update = optflow.last_update();
         uint8_t flowQuality = optflow.quality();
-        Vector2f flowRate = optflow.flowRate();
-        Vector2f bodyRate = optflow.bodyRate();
-        const Vector3f &posOffset = optflow.get_pos_offset();
-        ahrs.writeOptFlowMeas(flowQuality, flowRate, bodyRate, last_of_update, posOffset);
-        if (g.log_bitmask & MASK_LOG_OPTFLOW) {
+        Vector2f flowRate = optflow.flowRate();               //光流速度
+        Vector2f bodyRate = optflow.bodyRate();               //机体速度
+        const Vector3f &posOffset = optflow.get_pos_offset(); //偏移量
+        ahrs.writeOptFlowMeas(flowQuality, flowRate, bodyRate, last_of_update, posOffset); //获取测量值
+        if (g.log_bitmask & MASK_LOG_OPTFLOW)
+        {
             Log_Write_Optflow();
         }
     }
@@ -331,7 +338,14 @@ void Copter::accel_cal_update()
 #endif
 }
 
-// initialise proximity sensor
+/**************************************************************************************************************
+*函数原型：void Copter::init_proximity(void)
+*函数功能：初始化近距离传感器
+*修改日期：2019-2-18
+*修改作者：cihang_uav
+*备注信息：initialise proximity sensor
+****************************************************************************************************************/
+
 void Copter::init_proximity(void)
 {
 #if PROXIMITY_ENABLED == ENABLED

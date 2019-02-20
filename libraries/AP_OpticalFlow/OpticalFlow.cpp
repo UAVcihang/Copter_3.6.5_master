@@ -82,28 +82,46 @@ OpticalFlow::OpticalFlow(AP_AHRS_NavEKF &ahrs)
     _flags.healthy = false;
 }
 
+/**************************************************************************************************************
+*函数原型：void OpticalFlow::init(void)
+*函数功能：光流函数初始化
+*修改日期：2019-2-18
+*修改作者：cihang_uav
+*备注信息：initialise optical flow sensor
+****************************************************************************************************************/
 void OpticalFlow::init(void)
 {
+	hal.console->printf("***^^^***\r\n");
     // return immediately if not enabled
-    if (!_enabled) {
+	//如果没有初始化，立即返回
+    if (!_enabled)
+    {
         return;
     }
-
-    if (!backend) {
+    hal.console->printf("***^^^***123\r\n");
+    if (!backend)
+    {
 #if AP_FEATURE_BOARD_DETECT
+    	hal.console->printf("***^^^***1234\r\n");
         if (AP_BoardConfig::get_board_type() == AP_BoardConfig::PX4_BOARD_PIXHAWK ||
             AP_BoardConfig::get_board_type() == AP_BoardConfig::PX4_BOARD_PIXHAWK2 ||
-            AP_BoardConfig::get_board_type() == AP_BoardConfig::PX4_BOARD_PCNC1) {
+            AP_BoardConfig::get_board_type() == AP_BoardConfig::PX4_BOARD_PCNC1)
+        {
             // possibly have pixhart on external SPI
             backend = AP_OpticalFlow_Pixart::detect("pixartflow", *this);
         }
-        if (AP_BoardConfig::get_board_type() == AP_BoardConfig::PX4_BOARD_SP01) {
+        if (AP_BoardConfig::get_board_type() == AP_BoardConfig::PX4_BOARD_SP01)
+        {
             backend = AP_OpticalFlow_Pixart::detect("pixartPC15", *this);
         }
-        if (backend == nullptr) {
+        if (backend == nullptr) //默认是PX4的光流
+        {
+        	hal.console->printf("***^^^***12345\r\n");
             backend = AP_OpticalFlow_PX4Flow::detect(*this);
+            hal.console->printf("***^^^***123456\r\n");
         }
-        if (backend == nullptr) {
+        if (backend == nullptr)
+        {
             backend = AP_OpticalFlow_CXOF::detect(*this);
         }
 #elif CONFIG_HAL_BOARD == HAL_BOARD_SITL
@@ -117,14 +135,25 @@ void OpticalFlow::init(void)
 #endif
     }
 
-    if (backend != nullptr) {
-        backend->init();
+    if (backend != nullptr)
+    {
+        backend->init(); //进行初始化函数
     }
 }
 
+
+
+/**************************************************************************************************************
+*函数原型：void OpticalFlow::update(void)
+*函数功能：光流函数更新
+*修改日期：2019-2-18
+*修改作者：cihang_uav
+*备注信息：
+****************************************************************************************************************/
 void OpticalFlow::update(void)
 {
-    if (backend != nullptr) {
+    if (backend != nullptr)
+    {
         backend->update();
     }
     // only healthy if the data is less than 0.5s old

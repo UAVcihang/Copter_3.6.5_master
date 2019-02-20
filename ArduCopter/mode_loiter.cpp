@@ -1,69 +1,104 @@
+/**************************************************************************************************************
+*文件功能：悬停控制代码
+*修改日期：2019-2-20
+*修改作者：cihang_uav
+*备注信息：初始化和运行函数，调用在悬停模式------Init and run calls for loiter flight mode
+****************************************************************************************************************/
 #include "Copter.h"
 
-/*
- * Init and run calls for loiter flight mode
- */
 
-// loiter_init - initialise loiter controller
+
+/**************************************************************************************************************
+*函数原型：bool Copter::ModeLoiter::init(bool ignore_checks)
+*函数功能：任务列表
+*修改日期：2019-2-18
+*修改作者：cihang_uav
+*备注信息：loiter_init - initialise loiter controller
+****************************************************************************************************************/
 bool Copter::ModeLoiter::init(bool ignore_checks)
 {
-    if (copter.position_ok() || ignore_checks) {
-        if (!copter.failsafe.radio) {
+    if (copter.position_ok() || ignore_checks)
+    {
+        if (!copter.failsafe.radio)
+        {
             float target_roll, target_pitch;
-            // apply SIMPLE mode transform to pilot inputs
+            //申请简单模式，转换应用于目标输入---------apply SIMPLE mode transform to pilot inputs
             update_simple_mode();
 
-            // convert pilot input to lean angles
+            //转换遥控器输入到目标角度----------------convert pilot input to lean angles
             get_pilot_desired_lean_angles(target_roll, target_pitch, loiter_nav->get_angle_max_cd(), attitude_control->get_althold_lean_angle_max());
 
-            // process pilot's roll and pitch input
+            //处理目标横滚角和俯仰角----------------- process pilot's roll and pitch input
             loiter_nav->set_pilot_desired_acceleration(target_roll, target_pitch, G_Dt);
-        } else {
+        } else
+        {
             // clear out pilot desired acceleration in case radio failsafe event occurs and we do not switch to RTL for some reason
+        	//如果发生无线电故障保护事件，清除飞行员所需的加速，我们出于某种原因不切换到RTL。
             loiter_nav->clear_pilot_desired_acceleration();
         }
-        loiter_nav->init_target();
+        loiter_nav->init_target(); //初始化目标值
 
-        // initialise position and desired velocity
-        if (!pos_control->is_active_z()) {
+        //初始化位置目标速度-----initialise position and desired velocity
+        if (!pos_control->is_active_z())
+        {
             pos_control->set_alt_target_to_current_alt();
             pos_control->set_desired_velocity_z(inertial_nav.get_velocity_z());
         }
 
         return true;
-    } else {
+    } else
+    {
         return false;
     }
 }
 
+/**************************************************************************************************************
+*函数原型：函数头文件bool Copter::ModeLoiter::do_precision_loiter()
+*函数功能：精准降落
+*修改日期：2019-2-18
+*修改作者：cihang_uav
+*备注信息：
+****************************************************************************************************************/
 #if PRECISION_LANDING == ENABLED
 bool Copter::ModeLoiter::do_precision_loiter()
 {
-    if (!_precision_loiter_enabled) {
+    if (!_precision_loiter_enabled)
+    {
         return false;
     }
-    if (ap.land_complete_maybe) {
+    if (ap.land_complete_maybe)
+    {
         return false;        // don't move on the ground
     }
     // if the pilot *really* wants to move the vehicle, let them....
-    if (loiter_nav->get_pilot_desired_acceleration().length() > 50.0f) {
+    if (loiter_nav->get_pilot_desired_acceleration().length() > 50.0f)
+    {
         return false;
     }
-    if (!copter.precland.target_acquired()) {
+    if (!copter.precland.target_acquired())
+    {
         return false; // we don't have a good vector
     }
     return true;
 }
-
+/**************************************************************************************************************
+*函数原型：void Copter::ModeLoiter::precision_loiter_xy()
+*函数功能：x,y精准降落
+*修改日期：2019-2-18
+*修改作者：cihang_uav
+*备注信息：
+****************************************************************************************************************/
 void Copter::ModeLoiter::precision_loiter_xy()
 {
     loiter_nav->clear_pilot_desired_acceleration();
     Vector2f target_pos, target_vel_rel;
-    if (!copter.precland.get_target_position_cm(target_pos)) {
+    if (!copter.precland.get_target_position_cm(target_pos))
+    {
         target_pos.x = inertial_nav.get_position().x;
         target_pos.y = inertial_nav.get_position().y;
     }
-    if (!copter.precland.get_target_velocity_relative_cms(target_vel_rel)) {
+    if (!copter.precland.get_target_velocity_relative_cms(target_vel_rel))
+    {
         target_vel_rel.x = -inertial_nav.get_velocity().x;
         target_vel_rel.y = -inertial_nav.get_velocity().y;
     }
@@ -72,8 +107,15 @@ void Copter::ModeLoiter::precision_loiter_xy()
 }
 #endif
 
-// loiter_run - runs the loiter controller
-// should be called at 100hz or more
+
+/**************************************************************************************************************
+*函数原型：void Copter::ModeLoiter::run()
+*函数功能：悬停模式运行
+*修改日期：2019-2-20
+*修改作者：cihang_uav
+*备注信息：loiter_run - runs the loiter controller should be called at 100hz or more
+****************************************************************************************************************/
+
 void Copter::ModeLoiter::run()
 {
     LoiterModeState loiter_state;
@@ -87,8 +129,9 @@ void Copter::ModeLoiter::run()
     pos_control->set_speed_z(-get_pilot_speed_dn(), g.pilot_speed_up);
     pos_control->set_accel_z(g.pilot_accel_z);
 
-    // process pilot inputs unless we are in radio failsafe
-    if (!copter.failsafe.radio) {
+    //处理遥控器输入，除非我们你不在遥控器无线故障保护的状态下------ process pilot inputs unless we are in radio failsafe
+    if (!copter.failsafe.radio)
+    {
         // apply SIMPLE mode transform to pilot inputs
         update_simple_mode();
 
@@ -104,29 +147,36 @@ void Copter::ModeLoiter::run()
         // get pilot desired climb rate
         target_climb_rate = get_pilot_desired_climb_rate(channel_throttle->get_control_in());
         target_climb_rate = constrain_float(target_climb_rate, -get_pilot_speed_dn(), g.pilot_speed_up);
-    } else {
+    } else
+    {
         // clear out pilot desired acceleration in case radio failsafe event occurs and we do not switch to RTL for some reason
         loiter_nav->clear_pilot_desired_acceleration();
     }
 
     // relax loiter target if we might be landed
-    if (ap.land_complete_maybe) {
+    if (ap.land_complete_maybe)
+    {
         loiter_nav->soften_for_landing();
     }
 
     // Loiter State Machine Determination
-    if (!motors->armed() || !motors->get_interlock()) {
+    if (!motors->armed() || !motors->get_interlock())
+    {
         loiter_state = Loiter_MotorStopped;
-    } else if (takeoff.running() || takeoff.triggered(target_climb_rate)) {
+    } else if (takeoff.running() || takeoff.triggered(target_climb_rate))
+    {
         loiter_state = Loiter_Takeoff;
-    } else if (!ap.auto_armed || ap.land_complete) {
+    } else if (!ap.auto_armed || ap.land_complete)
+    {
         loiter_state = Loiter_Landed;
-    } else {
+    } else
+    {
         loiter_state = Loiter_Flying;
     }
 
     // Loiter State Machine
-    switch (loiter_state) {
+    switch (loiter_state)
+    {
 
     case Loiter_MotorStopped:
 
@@ -212,30 +262,43 @@ void Copter::ModeLoiter::run()
         }
 #endif
 
-        // run loiter controller
+        //运行导航控制---------------------run loiter controller
         loiter_nav->update(ekfGndSpdLimit, ekfNavVelGainScaler);
 
-        // call attitude controller
+        //号召姿态控制器-------------------call attitude controller
         attitude_control->input_euler_angle_roll_pitch_euler_rate_yaw(loiter_nav->get_roll(), loiter_nav->get_pitch(), target_yaw_rate);
 
-        // adjust climb rate using rangefinder
+        //使用测距传感器调节爬升速度---------adjust climb rate using rangefinder
         target_climb_rate = get_surface_tracking_climb_rate(target_climb_rate, pos_control->get_alt_target(), G_Dt);
 
-        // get avoidance adjusted climb rate
+        //获取避障爬升速度-----------------get avoidance adjusted climb rate
         target_climb_rate = get_avoidance_adjusted_climbrate(target_climb_rate);
 
-        // update altitude target and call position controller
+        //更新高度目标和号召位置控制器-------update altitude target and call position controller
         pos_control->set_alt_target_from_climb_rate_ff(target_climb_rate, G_Dt, false);
         pos_control->update_z_controller();
         break;
     }
 }
 
+/**************************************************************************************************************
+*函数原型：函数头文件
+*函数功能：任务列表
+*修改日期：2019-2-18
+*修改作者：cihang_uav
+*备注信息：
+****************************************************************************************************************/
 uint32_t Copter::ModeLoiter::wp_distance() const
 {
     return loiter_nav->get_distance_to_target();
 }
-
+/**************************************************************************************************************
+*函数原型：函数头文件
+*函数功能：任务列表
+*修改日期：2019-2-18
+*修改作者：cihang_uav
+*备注信息：
+****************************************************************************************************************/
 int32_t Copter::ModeLoiter::wp_bearing() const
 {
     return loiter_nav->get_bearing_to_target();

@@ -159,10 +159,10 @@ void Copter::init_ardupilot()
     {
     	SRV_Channels::set_output_pwm(SRV_Channel::k_sprayer_pump, 1094);
     }
-    // sets up motors and output to escs
+    //设置电机并输出到ESCS----- sets up motors and output to escs
     init_rc_out();
 
-    // motors initialised so parameters can be sent
+    //电机已初始化，因此可以发送参数---- motors initialised so parameters can be sent
     ap.initialised_params = true;
 
     // initialise which outputs Servo and Relay events can use
@@ -185,7 +185,7 @@ void Copter::init_ardupilot()
     gps.set_log_gps_bit(MASK_LOG_GPS);
     gps.init(serial_manager);
 
-    init_compass();
+    init_compass(); //罗盘初始化
 
 #if OPTFLOW == ENABLED
     // make optflow available to AHRS
@@ -206,7 +206,7 @@ void Copter::init_ardupilot()
     attitude_control->parameter_sanity_check();
     pos_control->set_dt(scheduler.get_loop_period_s());
 
-    // init the optical flow sensor
+    //初始化光流传感器驱动------init the optical flow sensor
     init_optflow();
 
 #if MOUNT == ENABLED
@@ -243,10 +243,10 @@ void Copter::init_ardupilot()
     barometer.set_log_baro_bit(MASK_LOG_IMU);
     barometer.calibrate();
 
-    // initialise rangefinder
+    //初始化测距仪--------------initialise rangefinder
     init_rangefinder();
 
-    // init proximity sensor
+    //初始接近传感器------------init proximity sensor
     init_proximity();
 
 #if BEACON_ENABLED == ENABLED

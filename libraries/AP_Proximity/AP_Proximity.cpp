@@ -187,60 +187,95 @@ AP_Proximity::AP_Proximity(AP_SerialManager &_serial_manager) :
     _singleton = this;
 }
 
-// initialise the Proximity class. We do detection of attached sensors here
-// we don't allow for hot-plugging of sensors (i.e. reboot required)
+/**************************************************************************************************************
+*函数原型：void Copter::init_proximity(void)
+*函数功能：初始化近距离传感器,在这里，我们不允许进行对传感器的连接进行热拔插
+*修改日期：2019-2-18
+*修改作者：cihang_uav
+*备注信息：initialise the Proximity class. We do detection of attached sensors here
+         we don't allow for hot-plugging of sensors (i.e. reboot required)
+****************************************************************************************************************/
+
 void AP_Proximity::init(void)
 {
-    if (num_instances != 0) {
+    if (num_instances != 0)
+    {
         // init called a 2nd time?
         return;
     }
-    for (uint8_t i=0; i<PROXIMITY_MAX_INSTANCES; i++) {
-        detect_instance(i);
-        if (drivers[i] != nullptr) {
+    for (uint8_t i=0; i<PROXIMITY_MAX_INSTANCES; i++)
+    {
+        detect_instance(i); //识别传感器
+        if (drivers[i] != nullptr)
+        {
             // we loaded a driver for this instance, so it must be
             // present (although it may not be healthy)
             num_instances = i+1;
         }
 
-        // initialise status
+        //初始化状态信息--------- initialise status
         state[i].status = Proximity_NotConnected;
     }
 }
 
-// update Proximity state for all instances. This should be called at a high rate by the main loop
+/**************************************************************************************************************
+*函数原型：void AP_Proximity::update(void)
+*函数功能：更新近距离传感器
+*修改日期：2019-2-18
+*修改作者：cihang_uav
+*备注信息：update Proximity state for all instances. This should be called at a high rate by the main loop
+****************************************************************************************************************/
 void AP_Proximity::update(void)
 {
-    for (uint8_t i=0; i<num_instances; i++) {
-        if (drivers[i] != nullptr) {
-            if (_type[i] == Proximity_Type_None) {
-                // allow user to disable a proximity sensor at runtime
+    for (uint8_t i=0; i<num_instances; i++)
+    {
+        if (drivers[i] != nullptr)
+        {
+            if (_type[i] == Proximity_Type_None)
+            {
+                //允许用户在运行时禁用接近传感器---- allow user to disable a proximity sensor at runtime
                 state[i].status = Proximity_NotConnected;
                 continue;
             }
-            drivers[i]->update();
+            drivers[i]->update(); //更新数据
         }
     }
 
-    // work out primary instance - first sensor returning good data
-    for (int8_t i=num_instances-1; i>=0; i--) {
-        if (drivers[i] != nullptr && (state[i].status == Proximity_Good)) {
+    //计算出主实例-第一个返回良好数据的传感器---- work out primary instance - first sensor returning good data
+    for (int8_t i=num_instances-1; i>=0; i--)
+    {
+        if (drivers[i] != nullptr && (state[i].status == Proximity_Good))
+        {
             primary_instance = i;
         }
     }
 }
 
-// return sensor orientation
+/**************************************************************************************************************
+*函数原型：uint8_t AP_Proximity::get_orientation(uint8_t instance) const
+*函数功能：获取方向
+*修改日期：2019-2-18
+*修改作者：cihang_uav
+*备注信息：return sensor orientation
+****************************************************************************************************************/
 uint8_t AP_Proximity::get_orientation(uint8_t instance) const
 {
-    if (instance >= PROXIMITY_MAX_INSTANCES) {
+    if (instance >= PROXIMITY_MAX_INSTANCES)
+    {
         return 0;
     }
 
     return _orientation[instance].get();
 }
 
-// return sensor yaw correction
+/**************************************************************************************************************
+*函数原型：int16_t AP_Proximity::get_yaw_correction(uint8_t instance) const
+*函数功能：更正方向
+*修改日期：2019-2-18
+*修改作者：cihang_uav
+*备注信息：return sensor yaw correction
+****************************************************************************************************************/
+
 int16_t AP_Proximity::get_yaw_correction(uint8_t instance) const
 {
     if (instance >= PROXIMITY_MAX_INSTANCES) {
@@ -276,50 +311,68 @@ void AP_Proximity::handle_msg(mavlink_message_t *msg)
     }
 }
 
-//  detect if an instance of a proximity sensor is connected.
+/**************************************************************************************************************
+*函数原型：void AP_Proximity::detect_instance(uint8_t instance)
+*函数功能：识别近距离传感器
+*修改日期：2019-2-20
+*修改作者：cihang_uav
+*备注信息： detect if an instance of a proximity sensor is connected.
+****************************************************************************************************************/
+
 void AP_Proximity::detect_instance(uint8_t instance)
 {
     uint8_t type = _type[instance];
-    if (type == Proximity_Type_SF40C) {
-        if (AP_Proximity_LightWareSF40C::detect(serial_manager)) {
+    if (type == Proximity_Type_SF40C)  //360度激光传感器
+    {
+        if (AP_Proximity_LightWareSF40C::detect(serial_manager))
+        {
             state[instance].instance = instance;
             drivers[instance] = new AP_Proximity_LightWareSF40C(*this, state[instance], serial_manager);
             return;
         }
     }
-    if (type == Proximity_Type_RPLidarA2) {
-        if (AP_Proximity_RPLidarA2::detect(serial_manager)) {
+    if (type == Proximity_Type_RPLidarA2) //360度激光扫描雷达
+    {
+        if (AP_Proximity_RPLidarA2::detect(serial_manager))
+        {
             state[instance].instance = instance;
             drivers[instance] = new AP_Proximity_RPLidarA2(*this, state[instance], serial_manager);
             return;
         }
     }
-    if (type == Proximity_Type_MAV) {
+    if (type == Proximity_Type_MAV)
+    {
         state[instance].instance = instance;
         drivers[instance] = new AP_Proximity_MAV(*this, state[instance]);
         return;
     }
-    if (type == Proximity_Type_TRTOWER) {
-        if (AP_Proximity_TeraRangerTower::detect(serial_manager)) {
+    if (type == Proximity_Type_TRTOWER)
+    {
+        if (AP_Proximity_TeraRangerTower::detect(serial_manager))
+        {
             state[instance].instance = instance;
             drivers[instance] = new AP_Proximity_TeraRangerTower(*this, state[instance], serial_manager);
             return;
         }
     }
-    if (type == Proximity_Type_TRTOWEREVO) {
-        if (AP_Proximity_TeraRangerTowerEvo::detect(serial_manager)) {
+    if (type == Proximity_Type_TRTOWEREVO)
+    {
+        if (AP_Proximity_TeraRangerTowerEvo::detect(serial_manager))
+        {
             state[instance].instance = instance;
             drivers[instance] = new AP_Proximity_TeraRangerTowerEvo(*this, state[instance], serial_manager);
             return;
         }
     }
-    if (type == Proximity_Type_RangeFinder) {
+    if (type == Proximity_Type_RangeFinder)  //使用测距仪数据
+    {
         state[instance].instance = instance;
         drivers[instance] = new AP_Proximity_RangeFinder(*this, state[instance]);
         return;
     }
 #if CONFIG_HAL_BOARD == HAL_BOARD_SITL
-    if (type == Proximity_Type_SITL) {
+    if (type == Proximity_Type_SITL)
+    {
         state[instance].instance = instance;
         drivers[instance] = new AP_Proximity_SITL(*this, state[instance]);
         return;
@@ -327,8 +380,16 @@ void AP_Proximity::detect_instance(uint8_t instance)
 #endif
 }
 
-// get distance in meters in a particular direction in degrees (0 is forward, clockwise)
-// returns true on successful read and places distance in distance
+
+/**************************************************************************************************************
+*函数原型：bool AP_Proximity::get_horizontal_distance(uint8_t instance, float angle_deg, float &distance) const
+*函数功能：识别近距离传感器
+*修改日期：2019-2-20
+*修改作者：cihang_uav
+*备注信息：get distance in meters in a particular direction in degrees (0 is forward, clockwise)
+         returns true on successful read and places distance in distance
+****************************************************************************************************************/
+
 bool AP_Proximity::get_horizontal_distance(uint8_t instance, float angle_deg, float &distance) const
 {
     if ((drivers[instance] == nullptr) || (_type[instance] == Proximity_Type_None)) {

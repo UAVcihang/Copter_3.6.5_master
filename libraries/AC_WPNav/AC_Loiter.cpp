@@ -140,6 +140,13 @@ void AC_Loiter::init_target()
     _pos_control.init_xy_controller();
 }
 
+/**************************************************************************************************************
+*函数原型：bool Copter::ModeLoiter::init(bool ignore_checks)
+*函数功能：任务列表
+*修改日期：2019-2-18
+*修改作者：cihang_uav
+*备注信息：loiter_init - initialise loiter controller
+****************************************************************************************************************/
 /// reduce response for landing
 void AC_Loiter::soften_for_landing()
 {
@@ -149,24 +156,30 @@ void AC_Loiter::soften_for_landing()
     _pos_control.set_xy_target(curr_pos.x, curr_pos.y);
 }
 
-/// set pilot desired acceleration in centi-degrees
-//   dt should be the time (in seconds) since the last call to this function
+/************************************************************************************************************************************
+*函数原型：void AC_Loiter::set_pilot_desired_acceleration(float euler_roll_angle_cd, float euler_pitch_angle_cd, float dt)
+*函数功能：设定飞行目标加速度
+*修改日期：2019-2-18
+*修改作者：cihang_uav
+*备注信息：set pilot desired acceleration in centi-degrees dt should be the time (in seconds) since the last call to this function
+**********************************************************************************************************************************/
+
 void AC_Loiter::set_pilot_desired_acceleration(float euler_roll_angle_cd, float euler_pitch_angle_cd, float dt)
 {
-    // Convert from centidegrees on public interface to radians
+    // 从cm度转换成公用的弧度接口----------------------Convert from centidegrees on public interface to radians
     const float euler_roll_angle = radians(euler_roll_angle_cd*0.01f);
     const float euler_pitch_angle = radians(euler_pitch_angle_cd*0.01f);
 
-    // convert our desired attitude to an acceleration vector assuming we are hovering
+    //假设我们在盘旋，把我们想要的姿态转换成加速度矢量。----convert our desired attitude to an acceleration vector assuming we are hovering
     const float pilot_cos_pitch_target = constrain_float(cosf(euler_pitch_angle), 0.5f, 1.0f);
     const float pilot_accel_rgt_cms = GRAVITY_MSS*100.0f * tanf(euler_roll_angle)/pilot_cos_pitch_target;
     const float pilot_accel_fwd_cms = -GRAVITY_MSS*100.0f * tanf(euler_pitch_angle);
 
-    // rotate acceleration vectors input to lat/lon frame
+    //旋转加速度矢量到地理坐标系-----------------------rotate acceleration vectors input to lat/lon frame
     _desired_accel.x = (pilot_accel_fwd_cms*_ahrs.cos_yaw() - pilot_accel_rgt_cms*_ahrs.sin_yaw());
     _desired_accel.y = (pilot_accel_fwd_cms*_ahrs.sin_yaw() + pilot_accel_rgt_cms*_ahrs.cos_yaw());
 
-    // difference between where we think we should be and where we want to be
+    //我们认为我们应该去的地方和我们想去的地方之间的区别-- difference between where we think we should be and where we want to be
     Vector2f angle_error(wrap_PI(euler_roll_angle - _predicted_euler_angle.x), wrap_PI(euler_pitch_angle - _predicted_euler_angle.y));
 
     // calculate the angular velocity that we would expect given our desired and predicted attitude
@@ -185,13 +198,25 @@ void AC_Loiter::set_pilot_desired_acceleration(float euler_roll_angle_cd, float 
     _predicted_accel.y = (pilot_predicted_accel_fwd_cms*_ahrs.sin_yaw() + pilot_predicted_accel_rgt_cms*_ahrs.cos_yaw());
 }
 
-/// get vector to stopping point based on a horizontal position and velocity
+/**************************************************************************************************************
+*函数原型：void AC_Loiter::get_stopping_point_xy(Vector
+*函数功能：任务列表
+*修改日期：2019-2-18
+*修改作者：cihang_uav
+*备注信息：get vector to stopping point based on a horizontal position and velocity
+****************************************************************************************************************/
+
 void AC_Loiter::get_stopping_point_xy(Vector3f& stopping_point) const
 {
     _pos_control.get_stopping_point_xy(stopping_point);
 }
-
-/// get maximum lean angle when using loiter
+/**************************************************************************************************************
+*函数原型：float AC_Loiter::get_angle_max_cd() const
+*函数功能：获取最大倾斜角，当使用在悬停
+*修改日期：2019-2-18
+*修改作者：cihang_uav
+*备注信息：get maximum lean angle when using loiter
+****************************************************************************************************************/
 float AC_Loiter::get_angle_max_cd() const
 {
     if (is_zero(_angle_max)) {
@@ -200,16 +225,26 @@ float AC_Loiter::get_angle_max_cd() const
     return MIN(_angle_max*100.0f, _pos_control.get_lean_angle_max_cd());
 }
 
-/// run the loiter controller
+
+
+/**************************************************************************************************************
+*函数原型：void AC_Loiter::update(float ekfGndSpdLimit, float ekfNavVelGainScaler)
+*函数功能：悬停控制更新
+*修改日期：2019-2-20
+*修改作者：cihang_uav
+*备注信息：run the loiter controller
+****************************************************************************************************************/
+
 void AC_Loiter::update(float ekfGndSpdLimit, float ekfNavVelGainScaler)
 {
-    // calculate dt
+    //计算时间--------calculate dt
     float dt = _pos_control.time_since_last_xy_update();
-    if (dt >= 0.2f) {
+    if (dt >= 0.2f)
+    {
         dt = 0.0f;
     }
 
-    // initialise pos controller speed and acceleration
+    //初始化位置控制器速度和加速度-------initialise pos controller speed and acceleration
     _pos_control.set_speed_xy(_speed_cms);
     _pos_control.set_accel_xy(_accel_cmss);
 
@@ -217,15 +252,30 @@ void AC_Loiter::update(float ekfGndSpdLimit, float ekfNavVelGainScaler)
     _pos_control.update_xy_controller(ekfNavVelGainScaler);
 }
 
-// sanity check parameters
+
+
+/**************************************************************************************************************
+*函数原型：void AC_Loiter::sanity_check_params()
+*函数功能：检查参数
+*修改日期：2019-2-20
+*修改作者：cihang_uav
+*备注信息：sanity check parameters
+****************************************************************************************************************/
 void AC_Loiter::sanity_check_params()
 {
     _speed_cms = MAX(_speed_cms, LOITER_SPEED_MIN);
     _accel_cmss = MIN(_accel_cmss, GRAVITY_MSS * 100.0f * tanf(ToRad(_attitude_control.lean_angle_max() * 0.01f)));
 }
 
-/// calc_desired_velocity - updates desired velocity (i.e. feed forward) with pilot requested acceleration and fake wind resistance
-///		updated velocity sent directly to position controller
+
+/*****************************************************************************************************************************************
+*函数原型：void AC_Loiter::calc_desired_velocity(float nav_dt, float ekfGndSpdLimit)
+*函数功能：计算速度
+*修改日期：2019-2-20
+*修改作者：cihang_uav
+*备注信息：calc_desired_velocity - updates desired velocity (i.e. feed forward) with pilot requested acceleration and fake wind resistance
+*        updated velocity sent directly to position controller
+****************************************************************************************************************************************/
 void AC_Loiter::calc_desired_velocity(float nav_dt, float ekfGndSpdLimit)
 {
     // calculate a loiter speed limit which is the minimum of the value set by the LOITER_SPEED
@@ -254,7 +304,8 @@ void AC_Loiter::calc_desired_velocity(float nav_dt, float ekfGndSpdLimit)
 
     Vector2f loiter_accel_brake;
     float desired_speed = desired_vel.length();
-    if (!is_zero(desired_speed)) {
+    if (!is_zero(desired_speed))
+    {
         Vector2f desired_vel_norm = desired_vel/desired_speed;
 
         // TODO: consider using a velocity squared relationship like
@@ -267,8 +318,10 @@ void AC_Loiter::calc_desired_velocity(float nav_dt, float ekfGndSpdLimit)
 
         // calculate a braking acceleration if sticks are at zero
         float loiter_brake_accel = 0.0f;
-        if (_desired_accel.is_zero()) {
-            if ((AP_HAL::millis()-_brake_timer) > _brake_delay * 1000.0f) {
+        if (_desired_accel.is_zero())
+        {
+            if ((AP_HAL::millis()-_brake_timer) > _brake_delay * 1000.0f)
+            {
                 float brake_gain = _pos_control.get_vel_xy_pid().kP() * 0.5f;
                 loiter_brake_accel = constrain_float(AC_AttitudeControl::sqrt_controller(desired_speed, brake_gain, _brake_jerk_max_cmsss, nav_dt), 0.0f, _brake_accel_cmss);
             }
@@ -296,8 +349,9 @@ void AC_Loiter::calc_desired_velocity(float nav_dt, float ekfGndSpdLimit)
 
     // Limit the velocity to prevent fence violations
     // TODO: We need to also limit the _desired_accel
-    if (_avoid != nullptr) {
-        _avoid->adjust_velocity(_pos_control.get_pos_xy_p().kP(), _accel_cmss, desired_vel, nav_dt);
+    if (_avoid != nullptr)
+    {
+        _avoid->adjust_velocity(_pos_control.get_pos_xy_p().kP(), _accel_cmss, desired_vel, nav_dt); //避障使用
     }
 
     // send adjusted feed forward acceleration and velocity back to the Position Controller

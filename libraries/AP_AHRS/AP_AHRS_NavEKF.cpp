@@ -1168,12 +1168,28 @@ bool AP_AHRS_NavEKF::get_filter_status(nav_filter_status &status) const
 
 }
 
-// write optical flow data to EKF
+/**********************************************************************************************************************************************************************************
+*函数原型：void  AP_AHRS_NavEKF::writeOptFlowMeas(uint8_t &rawFlowQuality, Vector2f &rawFlowRates, Vector2f &rawGyroRates, uint32_t &msecFlowMeas, const Vector3f &posOffset)
+*函数功能：任务列表
+*修改日期：2019-2-18
+*修改作者：cihang_uav
+*备注信息： write optical flow data to EKF
+************************************************************************************************************************************************************************************/
+
 void  AP_AHRS_NavEKF::writeOptFlowMeas(uint8_t &rawFlowQuality, Vector2f &rawFlowRates, Vector2f &rawGyroRates, uint32_t &msecFlowMeas, const Vector3f &posOffset)
 {
     EKF2.writeOptFlowMeas(rawFlowQuality, rawFlowRates, rawGyroRates, msecFlowMeas, posOffset);
     EKF3.writeOptFlowMeas(rawFlowQuality, rawFlowRates, rawGyroRates, msecFlowMeas, posOffset);
 }
+
+
+/**************************************************************************************************************
+*函数原型：函数头文件
+*函数功能：任务列表
+*修改日期：2019-2-18
+*修改作者：cihang_uav
+*备注信息：
+****************************************************************************************************************/
 
 // write body frame odometry measurements to the EKF
 void  AP_AHRS_NavEKF::writeBodyFrameOdom(float quality, const Vector3f &delPos, const Vector3f &delAng, float delTime, uint32_t timeStamp_ms, const Vector3f &posOffset)

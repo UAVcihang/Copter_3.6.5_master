@@ -115,8 +115,14 @@ void NavEKF2_core::readRangeFinder(void)
     }
 }
 
-// write the raw optical flow measurements
-// this needs to be called externally.
+/******************************************************************************************************************************************************************************
+*函数原型：void NavEKF2_core::writeOptFlowMeas(uint8_t &rawFlowQuality, Vector2f &rawFlowRates, Vector2f &rawGyroRates, uint32_t &msecFlowMeas, const Vector3f &posOffset)
+*函数功能：写一个原始测量值
+*修改日期：2019-2-18
+*修改作者：cihang_uav
+*备注信息：write the raw optical flow measurements this needs to be called externally.
+***************************************************************************************************************************************************************************/
+
 void NavEKF2_core::writeOptFlowMeas(uint8_t &rawFlowQuality, Vector2f &rawFlowRates, Vector2f &rawGyroRates, uint32_t &msecFlowMeas, const Vector3f &posOffset)
 {
     // The raw measurements need to be optical flow rates in radians/second averaged across the time since the last update
@@ -125,11 +131,20 @@ void NavEKF2_core::writeOptFlowMeas(uint8_t &rawFlowQuality, Vector2f &rawFlowRa
     // A positive Y rate is produced by a positive sensor rotation about the Y axis
     // This filter uses a different definition of optical flow rates to the sensor with a positive optical flow rate produced by a
     // negative rotation about that axis. For example a positive rotation of the flight vehicle about its X (roll) axis would produce a negative X flow rate
+	//原始测量值必须是自上次更新以来的时间，单位是弧度/s，光流速度的平均光流通过时间
+	//px4flow传感器输出光流速度，具有以下轴和符号协议：
+	//正的x速率是由围绕x轴的正的传感器旋转产生的。
+	//正Y速率是由围绕Y轴的正传感器旋转产生的
+	//该滤波器使用不同的光学流量定义，传感器的光学流量是由绕该轴的负旋转产生的正光学流量。例如，飞行器绕其X（横滚）轴的正旋转将产生负的X流速。
     flowMeaTime_ms = imuSampleTime_ms;
     // calculate bias errors on flow sensor gyro rates, but protect against spikes in data
     // reset the accumulated body delta angle and time
     // don't do the calculation if not enough time lapsed for a reliable body rate measurement
-    if (delTimeOF > 0.01f) {
+    //计算流量传感器陀螺仪速率的偏差误差，但要防止数据中出现峰值。
+    //复位累积的机体角度和时间
+    //如果没有足够的时间来进行可靠的机体速度测量，则不要进行计算
+    if (delTimeOF > 0.01f)
+    {
         flowGyroBias.x = 0.99f * flowGyroBias.x + 0.01f * constrain_float((rawGyroRates.x - delAngBodyOF.x/delTimeOF),-0.1f,0.1f);
         flowGyroBias.y = 0.99f * flowGyroBias.y + 0.01f * constrain_float((rawGyroRates.y - delAngBodyOF.y/delTimeOF),-0.1f,0.1f);
         delAngBodyOF.zero();
@@ -137,23 +152,29 @@ void NavEKF2_core::writeOptFlowMeas(uint8_t &rawFlowQuality, Vector2f &rawFlowRa
     }
     // by definition if this function is called, then flow measurements have been provided so we
     // need to run the optical flow takeoff detection
+    //如果代码运行到这里，光流测量的数据我们已经可以获得了。因为需要运行光流起飞检查
     detectOptFlowTakeoff();
 
     // calculate rotation matrices at mid sample time for flow observations
+    //在流量观测的中间采样过程中，计算旋转矩阵
     stateStruct.quat.rotation_matrix(Tbn_flow);
     // don't use data with a low quality indicator or extreme rates (helps catch corrupt sensor data)
-    if ((rawFlowQuality > 0) && rawFlowRates.length() < 4.2f && rawGyroRates.length() < 4.2f) {
+    if ((rawFlowQuality > 0) && rawFlowRates.length() < 4.2f && rawGyroRates.length() < 4.2f)
+    {
         // correct flow sensor body rates for bias and write
         ofDataNew.bodyRadXYZ.x = rawGyroRates.x - flowGyroBias.x;
         ofDataNew.bodyRadXYZ.y = rawGyroRates.y - flowGyroBias.y;
         // the sensor interface doesn't provide a z axis rate so use the rate from the nav sensor instead
-        if (delTimeOF > 0.001f) {
+        if (delTimeOF > 0.001f)
+        {
             // first preference is to use the rate averaged over the same sampling period as the flow sensor
             ofDataNew.bodyRadXYZ.z = delAngBodyOF.z / delTimeOF;
-        } else if (imuDataNew.delAngDT > 0.001f){
+        } else if (imuDataNew.delAngDT > 0.001f)
+        {
             // second preference is to use most recent IMU data
             ofDataNew.bodyRadXYZ.z = imuDataNew.delAng.z / imuDataNew.delAngDT;
-        } else {
+        } else
+        {
             // third preference is use zero
             ofDataNew.bodyRadXYZ.z =  0.0f;
         }
@@ -162,7 +183,7 @@ void NavEKF2_core::writeOptFlowMeas(uint8_t &rawFlowQuality, Vector2f &rawFlowRa
         ofDataNew.flowRadXY = - rawFlowRates; // raw (non motion compensated) optical flow angular rate about the X axis (rad/sec)
         // write the flow sensor position in body frame
         ofDataNew.body_offset = &posOffset;
-        // write flow rate measurements corrected for body rates
+        //写光流速度测量更正机体速度------ write flow rate measurements corrected for body rates
         ofDataNew.flowRadXYcomp.x = ofDataNew.flowRadXY.x + ofDataNew.bodyRadXYZ.x;
         ofDataNew.flowRadXYcomp.y = ofDataNew.flowRadXY.y + ofDataNew.bodyRadXYZ.y;
         // record time last observation was received so we can detect loss of data elsewhere

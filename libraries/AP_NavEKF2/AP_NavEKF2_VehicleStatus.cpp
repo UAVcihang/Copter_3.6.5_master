@@ -448,7 +448,14 @@ void NavEKF2_core::setTerrainHgtStable(bool val)
     terrainHgtStable = val;
 }
 
-// Detect takeoff for optical flow navigation
+/**************************************************************************************************************
+*函数原型：void NavEKF2_core::detectOptFlowTakeoff(void)
+*函数功能：起飞识别
+*修改日期：2019-2-19
+*修改作者：cihang_uav
+*备注信息：Detect takeoff for optical flow navigation
+****************************************************************************************************************/
+
 void NavEKF2_core::detectOptFlowTakeoff(void)
 {
     if (!onGround && !takeOffDetected && (imuSampleTime_ms - timeAtArming_ms) > 1000) {
