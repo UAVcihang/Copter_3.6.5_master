@@ -91,6 +91,13 @@ void Copter::enable_motor_output()
     motors->output_min();
 }
 
+/***********************************************************************************************************************
+*函数原型：void Copter::read_radio()
+*函数功能：读取遥控器数据
+*修改日期：2019-2-21
+*修改作者：cihang_uav
+*备注信息：
+*************************************************************************************************************************/
 void Copter::read_radio()
 {
     uint32_t tnow_ms = millis();
@@ -113,17 +120,27 @@ void Copter::read_radio()
         float dt = (tnow_ms - last_radio_update_ms)*1.0e-3f;
         rc_throttle_control_in_filter.apply(channel_throttle->get_control_in(), dt);
         last_radio_update_ms = tnow_ms;
-    }else{
+    }else
+    {
         uint32_t elapsed = tnow_ms - last_radio_update_ms;
         // turn on throttle failsafe if no update from the RC Radio for 500ms or 2000ms if we are using RC_OVERRIDE
         if (((!failsafe.rc_override_active && (elapsed >= FS_RADIO_TIMEOUT_MS)) || (failsafe.rc_override_active && (elapsed >= FS_RADIO_RC_OVERRIDE_TIMEOUT_MS))) &&
-            (g.failsafe_throttle && (ap.rc_receiver_present||motors->armed()) && !failsafe.radio)) {
+            (g.failsafe_throttle && (ap.rc_receiver_present||motors->armed()) && !failsafe.radio))
+        {
             Log_Write_Error(ERROR_SUBSYSTEM_RADIO, ERROR_CODE_RADIO_LATE_FRAME);
             set_failsafe_radio(true);
         }
     }
 }
 
+
+/***********************************************************************************************************************
+*函数原型：bool Copter::ZigZag::init(bool ignore_checks)
+*函数功能：AB点函数初始化
+*修改日期：2018-9-10
+*修改作者：cihang_uav
+*备注信息：ZigZag_init - initialise stabilize controller
+*************************************************************************************************************************/
 #define FS_COUNTER 3        // radio failsafe kicks in after 3 consecutive throttle values below failsafe_throttle_value
 void Copter::set_throttle_and_failsafe(uint16_t throttle_pwm)
 {

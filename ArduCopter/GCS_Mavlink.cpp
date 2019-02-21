@@ -2,16 +2,38 @@
 
 #include "GCS_Mavlink.h"
 
+/**************************************************************************************************************
+*函数原型：void Copter::gcs_send_heartbeat(void)
+*函数功能：处理心跳包数据
+*修改日期：2019-2-21
+*修改作者：cihang_uav
+*备注信息：
+****************************************************************************************************************/
 void Copter::gcs_send_heartbeat(void)
 {
-    gcs().send_message(MSG_HEARTBEAT);
+    gcs().send_message(MSG_HEARTBEAT); //发送心跳包数据
 }
 
+/**************************************************************************************************************
+*函数原型：函数头文件
+*函数功能：任务列表
+*修改日期：2019-2-18
+*修改作者：cihang_uav
+*备注信息：
+****************************************************************************************************************/
 void Copter::gcs_send_deferred(void)
 {
     gcs().retry_deferred();
 }
 
+
+/**************************************************************************************************************
+*函数原型：函数头文件
+*函数功能：任务列表
+*修改日期：2019-2-18
+*修改作者：cihang_uav
+*备注信息：
+****************************************************************************************************************/
 /*
  *  !!NOTE!!
  *
@@ -83,7 +105,13 @@ uint32_t GCS_MAVLINK_Copter::custom_mode() const
     return copter.control_mode;
 }
 
-
+/**************************************************************************************************************
+*函数原型：
+*函数功能：
+*修改日期：2019-2-21
+*修改作者：cihang_uav
+*备注信息：
+****************************************************************************************************************/
 MAV_STATE GCS_MAVLINK_Copter::system_status() const
 {
     // set system as critical if any failsafe have triggered
@@ -98,7 +126,13 @@ MAV_STATE GCS_MAVLINK_Copter::system_status() const
     return MAV_STATE_ACTIVE;
 }
 
-
+/**************************************************************************************************************
+*函数原型：
+*函数功能：
+*修改日期：2019-2-21
+*修改作者：cihang_uav
+*备注信息：
+****************************************************************************************************************/
 void GCS_MAVLINK_Copter::send_position_target_global_int()
 {
     Location_Class target;
@@ -130,7 +164,13 @@ NOINLINE void Copter::send_fence_status(mavlink_channel_t chan)
 }
 #endif
 
-
+/**************************************************************************************************************
+*函数原型：
+*函数功能：
+*修改日期：2019-2-21
+*修改作者：cihang_uav
+*备注信息：
+****************************************************************************************************************/
 NOINLINE void Copter::send_extended_status1(mavlink_channel_t chan)
 {
     int16_t battery_current = -1;
@@ -156,7 +196,13 @@ NOINLINE void Copter::send_extended_status1(mavlink_channel_t chan)
         0, // comm drops in pkts,
         0, 0, 0, 0);
 }
-
+/**************************************************************************************************************
+*函数原型：
+*函数功能：
+*修改日期：2019-2-21
+*修改作者：cihang_uav
+*备注信息：
+****************************************************************************************************************/
 void NOINLINE Copter::send_nav_controller_output(mavlink_channel_t chan)
 {
     const Vector3f &targets = attitude_control->get_att_target_euler_cd();
@@ -176,7 +222,13 @@ int16_t GCS_MAVLINK_Copter::vfr_hud_throttle() const
 {
     return (int16_t)(copter.motors->get_throttle() * 100);
 }
-
+/**************************************************************************************************************
+*函数原型：
+*函数功能：
+*修改日期：2019-2-21
+*修改作者：cihang_uav
+*备注信息：
+****************************************************************************************************************/
 /*
   send RPM packet
  */
@@ -192,7 +244,13 @@ void NOINLINE Copter::send_rpm(mavlink_channel_t chan)
 #endif
 }
 
-
+/**************************************************************************************************************
+*函数原型：
+*函数功能：
+*修改日期：2019-2-21
+*修改作者：cihang_uav
+*备注信息：
+****************************************************************************************************************/
 /*
   send PID tuning message
  */
@@ -252,21 +310,41 @@ void Copter::send_pid_tuning(mavlink_channel_t chan)
         }
     }
 }
-
+/**************************************************************************************************************
+*函数原型：
+*函数功能：
+*修改日期：2019-2-21
+*修改作者：cihang_uav
+*备注信息：
+****************************************************************************************************************/
 uint8_t GCS_MAVLINK_Copter::sysid_my_gcs() const
 {
     return copter.g.sysid_my_gcs;
 }
-
+/**************************************************************************************************************
+*函数原型：
+*函数功能：
+*修改日期：2019-2-21
+*修改作者：cihang_uav
+*备注信息：
+****************************************************************************************************************/
 uint32_t GCS_MAVLINK_Copter::telem_delay() const
 {
     return (uint32_t)(copter.g.telem_delay);
 }
 
-// try to send a message, return false if it wasn't sent
+/**************************************************************************************************************
+*函数原型：bool GCS_MAVLINK_Copter::try_send_message(enum ap_message id)
+*函数功能：发送信息
+*修改日期：2019-2-21
+*修改作者：cihang_uav
+*备注信息：try to send a message, return false if it wasn't sent
+****************************************************************************************************************/
+
 bool GCS_MAVLINK_Copter::try_send_message(enum ap_message id)
 {
-    if (telemetry_delayed()) {
+    if (telemetry_delayed())
+    {
         return false;
     }
 
@@ -278,18 +356,21 @@ bool GCS_MAVLINK_Copter::try_send_message(enum ap_message id)
     // the check for nullptr here doesn't just save a nullptr
     // dereference; it means that we send messages out even if we're
     // failing to detect a PX4 board type (see delay(3000) in px_drivers).
-    if (copter.motors != nullptr && copter.scheduler.time_available_usec() < 250 && copter.motors->armed()) {
+    if (copter.motors != nullptr && copter.scheduler.time_available_usec() < 250 && copter.motors->armed())
+    {
         gcs().set_out_of_time(true);
         return false;
     }
 #endif
 
-    switch(id) {
+    switch(id)
+    {
 
     case MSG_EXTENDED_STATUS1:
         // send extended status only once vehicle has been initialised
         // to avoid unnecessary errors being reported to user
-        if (copter.ap.initialised) {
+        if (copter.ap.initialised)
+        {
             CHECK_PAYLOAD_SIZE(SYS_STATUS);
             copter.send_extended_status1(chan);
             CHECK_PAYLOAD_SIZE(POWER_STATUS);
@@ -605,13 +686,22 @@ MAV_RESULT GCS_MAVLINK_Copter::_handle_command_preflight_calibration(const mavli
     return GCS_MAVLINK::_handle_command_preflight_calibration(packet);
 }
 
+/**************************************************************************************************************
+*函数原型：void GCS_MAVLINK_Copter::handleMessage(mavlink_message_t* msg)
+*函数功能：消息处理
+*修改日期：2019-2-21
+*修改作者：cihang_uav
+*备注信息：
+****************************************************************************************************************/
 void GCS_MAVLINK_Copter::handleMessage(mavlink_message_t* msg)
 {
     MAV_RESULT result = MAV_RESULT_FAILED;         // assume failure.  Each messages id is responsible for return ACK or NAK if required
 
     switch (msg->msgid)
     {
-
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                      信息ID  0   心跳包数据
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
     case MAVLINK_MSG_ID_HEARTBEAT:      // MAV ID: 0
     {
         // We keep track of the last time we received a heartbeat from our GCS for failsafe purposes
@@ -619,7 +709,9 @@ void GCS_MAVLINK_Copter::handleMessage(mavlink_message_t* msg)
         copter.failsafe.last_heartbeat_ms = AP_HAL::millis();
         break;
     }
-
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                      信息ID  22   挂载参数
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
     case MAVLINK_MSG_ID_PARAM_VALUE:  //22
     {
 #if MOUNT == ENABLED
@@ -627,7 +719,9 @@ void GCS_MAVLINK_Copter::handleMessage(mavlink_message_t* msg)
 #endif
         break;
     }
-
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                      信息ID  200   相机
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
     case MAVLINK_MSG_ID_GIMBAL_REPORT:  //200
     {
 #if MOUNT == ENABLED
@@ -635,7 +729,9 @@ void GCS_MAVLINK_Copter::handleMessage(mavlink_message_t* msg)
 #endif
         break;
     }
-
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                      信息ID  70   遥控器
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
     case MAVLINK_MSG_ID_RC_CHANNELS_OVERRIDE:       // MAV ID: 70
     {
         // allow override of RC channel values for HIL
@@ -674,7 +770,9 @@ void GCS_MAVLINK_Copter::handleMessage(mavlink_message_t* msg)
         copter.failsafe.last_heartbeat_ms = tnow;
         break;
     }
-
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                      信息ID  69   手动控制
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
     case MAVLINK_MSG_ID_MANUAL_CONTROL:     //69
     {
         if (msg->sysid != copter.g.sysid_my_gcs) {
@@ -711,7 +809,9 @@ void GCS_MAVLINK_Copter::handleMessage(mavlink_message_t* msg)
         copter.failsafe.last_heartbeat_ms = tnow;
         break;
     }
-
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                      信息ID  75   命令参数
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
     case MAVLINK_MSG_ID_COMMAND_INT:   //75
     {
         // decode packet
@@ -802,8 +902,10 @@ void GCS_MAVLINK_Copter::handleMessage(mavlink_message_t* msg)
         mavlink_msg_command_ack_send_buf(msg, chan, packet.command, result);
         break;
     }
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                      信息ID  76   Pre-Flight calibration requests
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    // Pre-Flight calibration requests
     case MAVLINK_MSG_ID_COMMAND_LONG:       // MAV ID: 76
     {
         // decode packet
@@ -842,7 +944,7 @@ void GCS_MAVLINK_Copter::handleMessage(mavlink_message_t* msg)
             }
             break;
 
-        case MAV_CMD_NAV_LAND:
+        case MAV_CMD_NAV_LAND:  //21
             if (copter.set_mode(LAND, MODE_REASON_GCS_COMMAND)) {
                 result = MAV_RESULT_ACCEPTED;
             }
@@ -1193,6 +1295,9 @@ void GCS_MAVLINK_Copter::handleMessage(mavlink_message_t* msg)
         break;
     }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                      信息ID  82   设定姿态目标
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #if MODE_GUIDED_ENABLED == ENABLED
     case MAVLINK_MSG_ID_SET_ATTITUDE_TARGET:   // MAV ID: 82
     {
@@ -1235,7 +1340,9 @@ void GCS_MAVLINK_Copter::handleMessage(mavlink_message_t* msg)
 
         break;
     }
-
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                      信息ID  84   设定位置目标
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
     case MAVLINK_MSG_ID_SET_POSITION_TARGET_LOCAL_NED:     // MAV ID: 84
     {
         // decode packet
@@ -1332,7 +1439,9 @@ void GCS_MAVLINK_Copter::handleMessage(mavlink_message_t* msg)
 
         break;
     }
-
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                      信息ID  86   设定位置目标全局
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
     case MAVLINK_MSG_ID_SET_POSITION_TARGET_GLOBAL_INT:    // MAV ID: 86
     {
         // decode packet
@@ -1445,7 +1554,9 @@ void GCS_MAVLINK_Copter::handleMessage(mavlink_message_t* msg)
 #endif
         break;
     }
-
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                      信息ID  90   HIL状态
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #if HIL_MODE != HIL_MODE_DISABLED
     case MAVLINK_MSG_ID_HIL_STATE:          // MAV ID: 90
     {
@@ -1493,6 +1604,9 @@ void GCS_MAVLINK_Copter::handleMessage(mavlink_message_t* msg)
     }
 #endif //  HIL_MODE != HIL_MODE_DISABLED
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                      信息ID  166/109   遥控器状态
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
     case MAVLINK_MSG_ID_RADIO:               //166
     case MAVLINK_MSG_ID_RADIO_STATUS:       // MAV ID: 109
     {
@@ -1500,6 +1614,9 @@ void GCS_MAVLINK_Copter::handleMessage(mavlink_message_t* msg)
         break;
     }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                      信息ID  149   着落目标
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #if PRECISION_LANDING == ENABLED
     case MAVLINK_MSG_ID_LANDING_TARGET: //149
         result = MAV_RESULT_ACCEPTED;
@@ -1507,6 +1624,9 @@ void GCS_MAVLINK_Copter::handleMessage(mavlink_message_t* msg)
         break;
 #endif
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//                      信息ID  160/161   fence
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #if AC_FENCE == ENABLED
     // send or receive fence points with GCS
     case MAVLINK_MSG_ID_FENCE_POINT:            // MAV ID: 160
@@ -1515,14 +1635,21 @@ void GCS_MAVLINK_Copter::handleMessage(mavlink_message_t* msg)
         break;
 #endif // AC_FENCE == ENABLED
 
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//               信息ID  156   遥控器状态
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
 #if MOUNT == ENABLED
     //deprecated. Use MAV_CMD_DO_MOUNT_CONFIGURE
     case MAVLINK_MSG_ID_MOUNT_CONFIGURE:        // MAV ID: 204
         copter.camera_mount.configure_msg(msg);
         break;
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//               信息ID  157
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
     //deprecated. Use MAV_CMD_DO_MOUNT_CONTROL
     case MAVLINK_MSG_ID_MOUNT_CONTROL:
-        if(!copter.camera_mount.has_pan_control()) {
+        if(!copter.camera_mount.has_pan_control())
+        {
             copter.flightmode->auto_yaw.set_fixed_yaw(
                 mavlink_msg_mount_control_get_input_c(msg)/100.0f,
                 0.0f,
@@ -1533,13 +1660,15 @@ void GCS_MAVLINK_Copter::handleMessage(mavlink_message_t* msg)
         break;
 #endif // MOUNT == ENABLED
 
-    case MAVLINK_MSG_ID_TERRAIN_DATA:
-    case MAVLINK_MSG_ID_TERRAIN_CHECK:
+    case MAVLINK_MSG_ID_TERRAIN_DATA:  //134
+    case MAVLINK_MSG_ID_TERRAIN_CHECK: //135
 #if AP_TERRAIN_AVAILABLE && AC_TERRAIN
         copter.terrain.handle_data(chan, msg);
 #endif
         break;
-
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+//               信息ID  243
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
     case MAVLINK_MSG_ID_SET_HOME_POSITION:
     {
         mavlink_set_home_position_t packet;
@@ -1560,17 +1689,17 @@ void GCS_MAVLINK_Copter::handleMessage(mavlink_message_t* msg)
         break;
     }
 
-    case MAVLINK_MSG_ID_ADSB_VEHICLE:
-    case MAVLINK_MSG_ID_UAVIONIX_ADSB_OUT_CFG:
-    case MAVLINK_MSG_ID_UAVIONIX_ADSB_OUT_DYNAMIC:
-    case MAVLINK_MSG_ID_UAVIONIX_ADSB_TRANSCEIVER_HEALTH_REPORT:
+    case MAVLINK_MSG_ID_ADSB_VEHICLE:  //246
+    case MAVLINK_MSG_ID_UAVIONIX_ADSB_OUT_CFG: //10001
+    case MAVLINK_MSG_ID_UAVIONIX_ADSB_OUT_DYNAMIC://10002
+    case MAVLINK_MSG_ID_UAVIONIX_ADSB_TRANSCEIVER_HEALTH_REPORT://10003
 #if ADSB_ENABLED == ENABLED
         copter.adsb.handle_message(chan, msg);
 #endif
         break;
 
 #if TOY_MODE_ENABLED == ENABLED
-    case MAVLINK_MSG_ID_NAMED_VALUE_INT:
+    case MAVLINK_MSG_ID_NAMED_VALUE_INT:  //252
         copter.g2.toy_mode.handle_message(msg);
         break;
 #endif
@@ -1627,10 +1756,14 @@ void Copter::mavlink_delay_cb()
 
 
 
+/**************************************************************************************************************
+*函数原型：void Copter::gcs_data_stream_send(void)
+*函数功能：数据流函数
+*修改日期：2019-2-21
+*修改作者：cihang_uav
+*备注信息：send data streams in the given rate range on both links
+****************************************************************************************************************/
 
-/*
- *  send data streams in the given rate range on both links
- */
 void Copter::gcs_data_stream_send(void)
 {
     gcs().data_stream_send();

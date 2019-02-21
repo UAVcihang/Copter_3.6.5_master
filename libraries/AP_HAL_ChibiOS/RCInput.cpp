@@ -51,7 +51,8 @@ bool RCInput::new_input()
     if (!_init) {
         return false;
     }
-    if (!rcin_mutex.take_nonblocking()) {
+    if (!rcin_mutex.take_nonblocking())
+    {
         return false;
     }
     bool valid = _rcin_timestamp_last_signal != _last_read;

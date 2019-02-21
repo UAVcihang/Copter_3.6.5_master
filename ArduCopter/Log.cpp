@@ -69,17 +69,26 @@ struct PACKED log_Optflow {
     float body_y;
 };
 
-// Write an optical flow packet
+/**************************************************************************************************************
+*函数原型：void Copter::Log_Write_Optflow(
+*函数功能：写光流数据
+*修改日期：2019-2-18
+*修改作者：cihang_uav
+*备注信息：Write an optical flow packet
+****************************************************************************************************************/
+
 void Copter::Log_Write_Optflow()
 {
  #if OPTFLOW == ENABLED
     // exit immediately if not enabled
-    if (!optflow.enabled()) {
+    if (!optflow.enabled())
+    {
         return;
     }
     const Vector2f &flowRate = optflow.flowRate();
     const Vector2f &bodyRate = optflow.bodyRate();
-    struct log_Optflow pkt = {
+    struct log_Optflow pkt =
+    {
         LOG_PACKET_HEADER_INIT(LOG_OPTFLOW_MSG),
         time_us         : AP_HAL::micros64(),
         surface_quality : optflow.quality(),
@@ -92,6 +101,14 @@ void Copter::Log_Write_Optflow()
  #endif     // OPTFLOW == ENABLED
 }
 
+
+/**************************************************************************************************************
+*函数原型：void Copter::Mode::set_land_complete(bool b)
+*函数功能：精准降落
+*修改日期：2019-2-18
+*修改作者：cihang_uav
+*备注信息：
+****************************************************************************************************************/
 struct PACKED log_Control_Tuning {
     LOG_PACKET_HEADER;
     uint64_t time_us;

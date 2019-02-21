@@ -142,7 +142,7 @@ const AP_Scheduler::Task Copter::scheduler_tasks[] = {
     SCHED_TASK(gcs_check_input,      400,    180), //检测输入
     SCHED_TASK(gcs_send_heartbeat,     1,    110), //发送心跳包信息
     SCHED_TASK(gcs_send_deferred,     50,    550), //发送识别信息
-    SCHED_TASK(gcs_data_stream_send,  50,    550), //发送数据流
+    SCHED_TASK(gcs_data_stream_send,  10,    550),  //发送数据流
 #if MOUNT == ENABLED
     SCHED_TASK_CLASS(AP_Mount,             &copter.camera_mount,        update,          50,  75),
 #endif
