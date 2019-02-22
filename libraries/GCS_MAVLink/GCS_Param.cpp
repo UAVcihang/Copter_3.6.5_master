@@ -278,24 +278,30 @@ void GCS_MAVLINK::handle_param_set(mavlink_message_t *msg)
 // see if we should send a stream now. Called at 50Hz
 bool GCS_MAVLINK::stream_trigger(enum streams stream_num)
 {
-    if (stream_num >= NUM_STREAMS) {
+    if (stream_num >= NUM_STREAMS)
+    {
         return false;
     }
     float rate = (uint8_t)streamRates[stream_num].get();
 
     rate *= adjust_rate_for_stream_trigger(stream_num);
 
-    if (rate <= 0) {
-        if (chan_is_streaming & (1U<<(chan-MAVLINK_COMM_0))) {
+    if (rate <= 0)
+    {
+        if (chan_is_streaming & (1U<<(chan-MAVLINK_COMM_0)))
+        {
             // if currently streaming then check if all streams are disabled
             // to allow runtime detection of user disabling streaming
             bool is_streaming = false;
-            for (uint8_t i=0; i<stream_num; i++) {
-                if (streamRates[stream_num] > 0) {
+            for (uint8_t i=0; i<stream_num; i++)
+            {
+                if (streamRates[stream_num] > 0)
+                {
                     is_streaming = true;
                 }
             }
-            if (!is_streaming) {
+            if (!is_streaming)
+            {
                 // all streams have been turned off, clear the bit flag
                 chan_is_streaming &= ~(1U<<(chan-MAVLINK_COMM_0));
             }
@@ -351,7 +357,8 @@ void GCS::send_parameter_value(const char *param_name, ap_var_type param_type, f
  */
 void GCS_MAVLINK::send_queued_parameters(void)
 {
-    if (!param_timer_registered) {
+    if (!param_timer_registered)
+    {
         param_timer_registered = true;
         hal.scheduler->register_io_process(FUNCTOR_BIND_MEMBER(&GCS_MAVLINK::param_io_timer, void));
     }

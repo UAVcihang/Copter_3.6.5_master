@@ -940,17 +940,23 @@ mission_ack:
     return mission_is_complete;
 }
 /**************************************************************************************************************
-*函数原型：
-*函数功能：
+*函数原型：void GCS_MAVLINK::push_deferred_messages(
+*函数功能：尝试发送最后一条消息
 *修改日期：2019-2-21
 *修改作者：cihang_uav
 *备注信息：
 ****************************************************************************************************************/
 void GCS_MAVLINK::push_deferred_messages()
 {
-    while (num_deferred_messages != 0) {
+//	hal.uartC->printf("%%%%%%\r\n");
+//	hal.uartC->printf("num_deferred_messages=%d\r\n",num_deferred_messages);
+    while (num_deferred_messages != 0) //num_deferred_messages=0
+    {
+//    	hal.uartC->printf("next_deferred_message=%d\r\n",next_deferred_message);
+//    	hal.uartC->printf("deferred_messages[next_deferred_message]=%d\r\n",deferred_messages[next_deferred_message]);
         if (!try_send_message(deferred_messages[next_deferred_message]))
         {
+//        	hal.uartC->printf("%%%\r\n");
             break;
         }
         next_deferred_message++;
@@ -962,8 +968,8 @@ void GCS_MAVLINK::push_deferred_messages()
     }
 }
 /**************************************************************************************************************
-*函数原型：
-*函数功能：
+*函数原型：void GCS_MAVLINK::retry_deferred()
+*函数功能：消息推迟发送
 *修改日期：2019-2-21
 *修改作者：cihang_uav
 *备注信息：
@@ -995,6 +1001,7 @@ void GCS_MAVLINK::send_message(enum ap_message id)
     // if there are no deferred messages, attempt to send straight away:
     if (num_deferred_messages == 0)
     {
+    	 hal.uartC->printf("id=%d\r\n",id);
         if (try_send_message(id))
         {
             // yay, we sent it!
@@ -1065,19 +1072,18 @@ void GCS_MAVLINK::packetReceived(const mavlink_status_t &status,
     }
 }
 /**************************************************************************************************************
-*函数原型：
-*函数功能：
+*函数原型：void GCS_MAVLINK::update(uint32_t max_time_us)
+*函数功能：数据更新
 *修改日期：2019-2-21
 *修改作者：cihang_uav
 *备注信息：
 ****************************************************************************************************************/
-void
-GCS_MAVLINK::update(uint32_t max_time_us)
+void GCS_MAVLINK::update(uint32_t max_time_us)
 {
     // receive new packets
-    mavlink_message_t msg;
-    mavlink_status_t status;
-    uint32_t tstart_us = AP_HAL::micros();
+    mavlink_message_t msg;                       //协议
+    mavlink_status_t status;                     //协议状态
+    uint32_t tstart_us = AP_HAL::micros();       //开始时间
     uint32_t now_ms = AP_HAL::millis();
 
     hal.util->perf_begin(_perf_update);
@@ -1085,14 +1091,14 @@ GCS_MAVLINK::update(uint32_t max_time_us)
     status.packet_rx_drop_count = 0;
 
     // process received bytes
-    uint16_t nbytes = comm_get_available(chan);
+    uint16_t nbytes = comm_get_available(chan); //接收串口数据
     for (uint16_t i=0; i<nbytes; i++)
     {
-        const uint8_t c = (uint8_t)_port->read();
+        const uint8_t c = (uint8_t)_port->read(); //接收串口通道
         const uint32_t protocol_timeout = 4000;
         
-        if (alternative.handler &&
-            now_ms - alternative.last_mavlink_ms > protocol_timeout) {
+        if (alternative.handler && now_ms - alternative.last_mavlink_ms > protocol_timeout)
+        {
             /*
               we have an alternative protocol handler installed and we
               haven't parsed a MAVLink packet for 4 seconds. Try
@@ -1115,9 +1121,10 @@ GCS_MAVLINK::update(uint32_t max_time_us)
         bool parsed_packet = false;
 
         // Try to get a new message
-        if (mavlink_parse_char(chan, c, &msg, &status)) {
+        if (mavlink_parse_char(chan, c, &msg, &status)) //开始获取新信息，进行数据解包
+        {
             hal.util->perf_begin(_perf_packet);
-            packetReceived(status, msg);
+            packetReceived(status, msg);      //解析数据
             hal.util->perf_end(_perf_packet);
             parsed_packet = true;
             gcs_alternative_active[chan] = false;
@@ -1136,20 +1143,24 @@ GCS_MAVLINK::update(uint32_t max_time_us)
 
     // send a timesync message every 10 seconds; this is for data
     // collection purposes
-    if (tnow - _timesync_request.last_sent_ms > _timesync_request.interval_ms) {
+    if (tnow - _timesync_request.last_sent_ms > _timesync_request.interval_ms)
+    {
         if (HAVE_PAYLOAD_SPACE(chan, TIMESYNC)) {
             send_timesync();
             _timesync_request.last_sent_ms = tnow;
         }
     }
 
-    if (waypoint_receiving) {
+    if (waypoint_receiving)
+    {
         const uint32_t wp_recv_time = 1000U + (stream_slowdown*20);
 
         // stop waypoint receiving if timeout
-        if (tnow - waypoint_timelast_receive > wp_recv_time+waypoint_receive_timeout) {
+        if (tnow - waypoint_timelast_receive > wp_recv_time+waypoint_receive_timeout)
+        {
             waypoint_receiving = false;
-        } else if (tnow - waypoint_timelast_request > wp_recv_time) {
+        } else if (tnow - waypoint_timelast_request > wp_recv_time)
+        {
             waypoint_timelast_request = tnow;
             send_message(MSG_NEXT_WAYPOINT);
         }
@@ -1584,22 +1595,24 @@ void GCS::send_message(enum ap_message id)
 
 /**************************************************************************************************************
 *函数原型：void GCS::retry_deferred()
-*函数功能：
+*函数功能：推迟重试
 *修改日期：2019-2-21
 *修改作者：cihang_uav
 *备注信息：
 ****************************************************************************************************************/
 void GCS::retry_deferred()
 {
-    for (uint8_t i=0; i<num_gcs(); i++) {
-        if (chan(i).initialised) {
+    for (uint8_t i=0; i<num_gcs(); i++)
+    {
+        if (chan(i).initialised)
+        {
             chan(i).retry_deferred();
         }
     }
     service_statustext();
 }
 /**************************************************************************************************************
-*函数原型：
+*函数原型：void GCS::data_stream_send()
 *函数功能：
 *修改日期：2019-2-21
 *修改作者：cihang_uav
@@ -1607,9 +1620,11 @@ void GCS::retry_deferred()
 ****************************************************************************************************************/
 void GCS::data_stream_send()
 {
-    for (uint8_t i=0; i<num_gcs(); i++) {
-        if (chan(i).initialised) {
-            chan(i).data_stream_send();
+    for (uint8_t i=0; i<num_gcs(); i++)
+    {
+        if (chan(i).initialised)
+        {
+            chan(i).data_stream_send(); //发送数据
         }
     }
 }
@@ -1985,9 +2000,9 @@ void GCS_MAVLINK::send_heartbeat() const
         chan,
         frame_type(),        //四旋翼
 		MAV_AUTOPILOT_CHUAV_END,//MAV_AUTOPILOT_ARDUPILOTMEGA,
-        base_mode(),
-        custom_mode(),
-        system_status());
+        base_mode(), //51
+        custom_mode(),//03
+        system_status());//03
 }
 
 
@@ -3673,20 +3688,23 @@ bool GCS_MAVLINK::try_send_message(const enum ap_message id)
     return ret;
 }
 /**************************************************************************************************************
-*函数原型：
-*函数功能：
+*函数原型：void GCS_MAVLINK::data_stream_send(void)
+*函数功能：串行数据流发送
 *修改日期：2019-2-21
 *修改作者：cihang_uav
 *备注信息：
 ****************************************************************************************************************/
 void GCS_MAVLINK::data_stream_send(void)
 {
-    if (waypoint_receiving) {
-        // don't interfere with mission transfer
+	hal.uartC->printf("******\r\n");
+    if (waypoint_receiving)
+    {
+        //不要干扰任务迁移--- don't interfere with mission transfer
         return;
     }
 
-    if (!hal.scheduler->in_delay_callback()) {
+    if (!hal.scheduler->in_delay_callback())
+    {
         // DataFlash_Class will not send log data if we are armed.
         DataFlash_Class::instance()->handle_log_send();
     }
@@ -3696,16 +3714,21 @@ void GCS_MAVLINK::data_stream_send(void)
     send_queued_parameters();
 
     if (gcs().out_of_time()) return;
-
-    if (hal.scheduler->in_delay_callback()) {
-        if (in_hil_mode()) {
+//    hal.uartC->printf("************\r\n");
+    if (hal.scheduler->in_delay_callback())
+    {
+//    	hal.uartC->printf("+++++++++\r\n");
+        if (in_hil_mode())
+        {
             // in HIL we need to keep sending servo values to ensure
             // the simulator doesn't pause, otherwise our sensor
             // calibration could stall
-            if (stream_trigger(STREAM_RAW_CONTROLLER)) {
+            if (stream_trigger(STREAM_RAW_CONTROLLER))
+            {
                 send_message(MSG_SERVO_OUT);
             }
-            if (stream_trigger(STREAM_RC_CHANNELS)) {
+            if (stream_trigger(STREAM_RC_CHANNELS))
+            {
                 send_message(MSG_SERVO_OUTPUT_RAW);
             }
         }
@@ -3713,21 +3736,30 @@ void GCS_MAVLINK::data_stream_send(void)
         // take way too long to run
         return;
     }
-
-    for (uint8_t i=0; all_stream_entries[i].ap_message_ids != nullptr; i++) {
+    hal.uartC->printf("------\r\n");
+    for (uint8_t i=0; all_stream_entries[i].ap_message_ids != nullptr; i++)
+    {
         const streams id = (streams)all_stream_entries[i].stream_id;
-        if (!stream_trigger(id)) {
+
+        if (!stream_trigger(id))
+        {
             continue;
         }
+
         const ap_message *msg_ids = all_stream_entries[i].ap_message_ids;
-        for (uint8_t j=0; j<all_stream_entries[i].num_ap_message_ids; j++) {
+        for (uint8_t j=0; j<all_stream_entries[i].num_ap_message_ids; j++)
+        {
             const ap_message msg_id = msg_ids[j];
-            send_message(msg_id);
+            hal.uartC->printf("msg_id=%d\r\n",msg_id);
+            send_message(msg_id);  //发送数据留
         }
-        if (gcs().out_of_time()) {
+        if (gcs().out_of_time())
+        {
             break;
         }
+
     }
+    hal.uartC->printf("^^^^^^^\r\n");
 }
 /**************************************************************************************************************
 *函数原型：
