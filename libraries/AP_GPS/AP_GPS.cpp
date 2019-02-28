@@ -902,10 +902,18 @@ void AP_GPS::inject_data(uint8_t instance, uint8_t *data, uint16_t len)
     }
 }
 
+/**************************************************************************************************************
+*函数原型：void AP_GPS::send_mavlink_gps_raw(mavlink_channel_t chan)
+*函数功能：发送原始GPS数据
+*修改日期：2019-2-21
+*修改作者：cihang_uav
+*备注信息：
+****************************************************************************************************************/
 void AP_GPS::send_mavlink_gps_raw(mavlink_channel_t chan)
 {
     static uint32_t last_send_time_ms[MAVLINK_COMM_NUM_BUFFERS];
-    if (status(0) > AP_GPS::NO_GPS) {
+    if (status(0) > AP_GPS::NO_GPS)
+    {
         // when we have a GPS then only send new data
         if (last_send_time_ms[chan] == last_message_time_ms(0)) {
             return;
@@ -945,6 +953,13 @@ void AP_GPS::send_mavlink_gps_raw(mavlink_channel_t chan)
         0);                   // TODO one-sigma heading accuracy standard deviation
 }
 
+/**************************************************************************************************************
+*函数原型：void AP_GPS::send_mavlink_gps2_raw(mavlink_channel_t chan)
+*函数功能：发送GPS2原始数据
+*修改日期：2019-2-25
+*修改作者：cihang_uav
+*备注信息：
+****************************************************************************************************************/
 void AP_GPS::send_mavlink_gps2_raw(mavlink_channel_t chan)
 {
     static uint32_t last_send_time_ms[MAVLINK_COMM_NUM_BUFFERS];
@@ -952,7 +967,8 @@ void AP_GPS::send_mavlink_gps2_raw(mavlink_channel_t chan)
         return;
     }
     // when we have a GPS then only send new data
-    if (last_send_time_ms[chan] == last_message_time_ms(1)) {
+    if (last_send_time_ms[chan] == last_message_time_ms(1))
+    {
         return;
     }
     last_send_time_ms[chan] = last_message_time_ms(1);
@@ -974,15 +990,33 @@ void AP_GPS::send_mavlink_gps2_raw(mavlink_channel_t chan)
         rtk_age_ms(1));
 }
 
+/**************************************************************************************************************
+*函数原型：void AP_GPS::send_mavlink_gps_rtk(mavlink_channel_t chan, uint8_t inst)
+*函数功能：发送GPS RTK数据
+*修改日期：2019-2-25
+*修改作者：cihang_uav
+*备注信息：
+****************************************************************************************************************/
+
 void AP_GPS::send_mavlink_gps_rtk(mavlink_channel_t chan, uint8_t inst)
 {
-    if (inst >= GPS_MAX_RECEIVERS) {
+    if (inst >= GPS_MAX_RECEIVERS)
+    {
         return;
     }
-    if (drivers[inst] != nullptr && drivers[inst]->supports_mavlink_gps_rtk_message()) {
+    if (drivers[inst] != nullptr && drivers[inst]->supports_mavlink_gps_rtk_message())
+    {
         drivers[inst]->send_mavlink_gps_rtk(chan);
     }
 }
+
+/**************************************************************************************************************
+*函数原型：uint8_t AP_GPS::first_unconfigured_gps(void) const
+*函数功能：第一次不配置GPS
+*修改日期：2019-2-25
+*修改作者：cihang_uav
+*备注信息：
+****************************************************************************************************************/
 
 uint8_t AP_GPS::first_unconfigured_gps(void) const
 {
@@ -993,6 +1027,8 @@ uint8_t AP_GPS::first_unconfigured_gps(void) const
     }
     return GPS_ALL_CONFIGURED;
 }
+
+
 
 void AP_GPS::broadcast_first_configuration_failure_reason(void) const
 {

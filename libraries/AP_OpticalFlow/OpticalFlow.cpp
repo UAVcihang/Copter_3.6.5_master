@@ -91,18 +91,18 @@ OpticalFlow::OpticalFlow(AP_AHRS_NavEKF &ahrs)
 ****************************************************************************************************************/
 void OpticalFlow::init(void)
 {
-	hal.console->printf("***^^^***\r\n");
+	hal.uartC->printf("***^^^***\r\n");
     // return immediately if not enabled
 	//如果没有初始化，立即返回
     if (!_enabled)
     {
         return;
     }
-    hal.console->printf("***^^^***123\r\n");
+    hal.uartC->printf("***^^^***123\r\n");
     if (!backend)
     {
 #if AP_FEATURE_BOARD_DETECT
-    	hal.console->printf("***^^^***1234\r\n");
+    	hal.uartC->printf("***^^^***1234\r\n");
         if (AP_BoardConfig::get_board_type() == AP_BoardConfig::PX4_BOARD_PIXHAWK ||
             AP_BoardConfig::get_board_type() == AP_BoardConfig::PX4_BOARD_PIXHAWK2 ||
             AP_BoardConfig::get_board_type() == AP_BoardConfig::PX4_BOARD_PCNC1)
@@ -116,9 +116,9 @@ void OpticalFlow::init(void)
         }
         if (backend == nullptr) //默认是PX4的光流
         {
-        	hal.console->printf("***^^^***12345\r\n");
+        	hal.uartC->printf("***^^^***12345\r\n");
             backend = AP_OpticalFlow_PX4Flow::detect(*this);
-            hal.console->printf("***^^^***123456\r\n");
+            hal.uartC->printf("***^^^***123456\r\n");
         }
         if (backend == nullptr)
         {

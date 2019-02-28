@@ -249,7 +249,7 @@ void AP_Notify::add_backends(void)
 
 			//注意这里先换成IIC2
 			case Notify_LED_CIHANG_I2C_Internal: //256
-				ADD_BACKEND(new ToshibaLED_I2C(TOSHIBA_LED_I2C2_BUS_EXTERNAL)); //0x03
+//				ADD_BACKEND(new ToshibaLED_I2C(TOSHIBA_LED_I2C2_BUS_EXTERNAL)); //0x03
 				ADD_BACKEND(new ToshibaLED_I2C(TOSHIBA_LED_I2C4_BUS_EXTERNAL)); //0x03
 				break;
 			case Notify_LED_CIHANG_PWM_Internal:

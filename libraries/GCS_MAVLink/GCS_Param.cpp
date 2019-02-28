@@ -28,21 +28,27 @@ ObjectBuffer<GCS_MAVLINK::pending_param_reply> GCS_MAVLINK::param_replies(5);
 
 bool GCS_MAVLINK::param_timer_registered;
 
-/**
- * @brief Send the next pending parameter, called from deferred message
- * handling code
- */
-void
-GCS_MAVLINK::queued_param_send()
+
+/**************************************************************************************************************
+*函数原型：void GCS_MAVLINK::queued_param_send()
+*函数功能：简单发送下一个挂起的参数，从延迟的消息处理代码调用
+*修改日期：2019-2-21
+*修改作者：cihang_uav
+*备注信息：brief Send the next pending parameter, called from deferred message handling code
+****************************************************************************************************************/
+
+void GCS_MAVLINK::queued_param_send()
 {
-    if (!initialised) {
+    if (!initialised)
+    {
         return;
     }
 
-    // send one parameter async reply if pending
+    //如果挂起，发送一个参数异步回复---------send one parameter async reply if pending
     send_parameter_reply();
 
-    if (_queued_parameter == nullptr) {
+    if (_queued_parameter == nullptr)
+    {
         return;
     }
     
@@ -61,11 +67,13 @@ GCS_MAVLINK::queued_param_send()
 
     // when we don't have flow control we really need to keep the
     // param download very slow, or it tends to stall
-    if (!have_flow_control() && count > 5) {
+    if (!have_flow_control() && count > 5)
+    {
         count = 5;
     }
 
-    while (_queued_parameter != nullptr && count--) {
+    while (_queued_parameter != nullptr && count--)
+    {
         AP_Param      *vp;
         float value;
 
@@ -97,26 +105,38 @@ GCS_MAVLINK::queued_param_send()
     _queued_parameter_send_time_ms = tnow;
 }
 
-/*
-  return true if a channel has flow control
- */
+
+
+/**************************************************************************************************************
+*函数原型：bool GCS_MAVLINK::have_flow_control(void)
+*函数功能：有光流控制
+*修改日期：2019-2-21
+*修改作者：cihang_uav
+*备注信息：return true if a channel has flow control
+****************************************************************************************************************/
+
 bool GCS_MAVLINK::have_flow_control(void)
 {
-    if (_port == nullptr) {
+    if (_port == nullptr)
+    {
         return false;
     }
 
-    if (_port->get_flow_control() != AP_HAL::UARTDriver::FLOW_CONTROL_DISABLE) {
+    if (_port->get_flow_control() != AP_HAL::UARTDriver::FLOW_CONTROL_DISABLE)
+    {
         return true;
     }
 
-    if (chan == MAVLINK_COMM_0) {
+    if (chan == MAVLINK_COMM_0)
+    {
         // assume USB console has flow control
         return hal.gpio->usb_connected();
     }
 
     return false;
 }
+
+
 
 
 /*
@@ -425,14 +445,21 @@ void GCS_MAVLINK::param_io_timer(void)
     param_replies.push(reply);
 }
 
-/*
-  send a reply to a PARAM_REQUEST_READ
- */
+
+/**************************************************************************************************************
+*函数原型：void GCS_MAVLINK::send_parameter_reply(void)
+*函数功能：发送延迟参数
+*修改日期：2019-2-25
+*修改作者：cihang_uav
+*备注信息：send a reply to a PARAM_REQUEST_READ
+****************************************************************************************************************/
+
 void GCS_MAVLINK::send_parameter_reply(void)
 {
     struct pending_param_reply reply;
     
-    if (!param_replies.pop(reply)) {
+    if (!param_replies.pop(reply))
+    {
         // nothing to do
         return;
     }
@@ -446,6 +473,14 @@ void GCS_MAVLINK::send_parameter_reply(void)
         reply.param_index);
 }
 
+
+/**************************************************************************************************************
+*函数原型：void GCS_MAVLINK::handle_common_param_message(mavlink_message_t *msg)
+*函数功能：发送共同参数信息
+*修改日期：2019-2-25
+*修改作者：cihang_uav
+*备注信息：
+****************************************************************************************************************/
 void GCS_MAVLINK::handle_common_param_message(mavlink_message_t *msg)
 {
     switch (msg->msgid) {
@@ -460,3 +495,7 @@ void GCS_MAVLINK::handle_common_param_message(mavlink_message_t *msg)
         break;
     }
 }
+
+/**************************************************************************************************************
+*                                           File-END
+***************************************************************************************************************/

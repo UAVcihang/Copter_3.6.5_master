@@ -127,8 +127,8 @@ MAV_STATE GCS_MAVLINK_Copter::system_status() const
 }
 
 /**************************************************************************************************************
-*函数原型：
-*函数功能：
+*函数原型：void GCS_MAVLINK_Copter::send_position_target_global_int()
+*函数功能：发送位置目标
 *修改日期：2019-2-21
 *修改作者：cihang_uav
 *备注信息：
@@ -343,6 +343,7 @@ uint32_t GCS_MAVLINK_Copter::telem_delay() const
 
 bool GCS_MAVLINK_Copter::try_send_message(enum ap_message id)
 {
+
     if (telemetry_delayed())
     {
         return false;
@@ -411,7 +412,7 @@ bool GCS_MAVLINK_Copter::try_send_message(enum ap_message id)
 #endif // MOUNT == ENABLED
         break;
 
-    case MSG_OPTICAL_FLOW:
+    case MSG_OPTICAL_FLOW:  //31,发送光流信息
 #if OPTFLOW == ENABLED
         CHECK_PAYLOAD_SIZE(OPTICAL_FLOW);
         send_opticalflow(copter.optflow);
@@ -1766,7 +1767,7 @@ void Copter::mavlink_delay_cb()
 
 void Copter::gcs_data_stream_send(void)
 {
-    gcs().data_stream_send();
+    gcs().data_stream_send(); //发送数据流数据
 }
 
 /**************************************************************************************************************

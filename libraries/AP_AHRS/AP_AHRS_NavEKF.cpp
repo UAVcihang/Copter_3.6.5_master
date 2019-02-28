@@ -1431,10 +1431,18 @@ bool AP_AHRS_NavEKF::resetHeightDatum(void)
     return false;
 }
 
-// send a EKF_STATUS_REPORT for current EKF
+/**************************************************************************************************************
+*函数原型：void AP_AHRS_NavEKF::send_ekf_status_report(mavlink_channel_t chan) const
+*函数功能：发送ekf状态报告信息
+*修改日期：2019-2-21
+*修改作者：cihang_uav
+*备注信息：send a EKF_STATUS_REPORT for current EKF
+****************************************************************************************************************/
+
 void AP_AHRS_NavEKF::send_ekf_status_report(mavlink_channel_t chan) const
 {
-    switch (ekf_type()) {
+    switch (ekf_type())
+    {
     case EKF_TYPE_NONE:
         // send zero status report
         mavlink_msg_ekf_status_report_send(chan, 0, 0, 0, 0, 0, 0, 0);
@@ -1448,39 +1456,50 @@ void AP_AHRS_NavEKF::send_ekf_status_report(mavlink_channel_t chan) const
 #endif
         
     case EKF_TYPE2:
-        return EKF2.send_status_report(chan);
+        return EKF2.send_status_report(chan); //EKF2信息
 
     case EKF_TYPE3:
-        return EKF3.send_status_report(chan);
+        return EKF3.send_status_report(chan); //EKF3信息
 
     }
 }
 
-// passes a reference to the location of the inertial navigation origin
-// in WGS-84 coordinates
-// returns a boolean true when the inertial navigation origin has been set
+/**************************************************************************************************************
+*函数原型：bool AP_AHRS_NavEKF::get_origin(Location &ret) const
+*函数功能：发送ekf状态报告信息;传递对惯性导航原点位置的引用,在wgs-84坐标系中，当设置惯性导航原点时返回布尔真值。
+*修改日期：2019-2-21
+*修改作者：cihang_uav
+*备注信息：passes a reference to the location of the inertial navigation origin
+*        in WGS-84 coordinates
+*        returns a boolean true when the inertial navigation origin has been set
+****************************************************************************************************************/
+
 bool AP_AHRS_NavEKF::get_origin(Location &ret) const
 {
-    switch (ekf_type()) {
+    switch (ekf_type())
+    {
     case EKF_TYPE_NONE:
         return false;
 
     case EKF_TYPE2:
     default:
-        if (!EKF2.getOriginLLH(-1,ret)) {
+        if (!EKF2.getOriginLLH(-1,ret))
+        {
             return false;
         }
         return true;
 
     case EKF_TYPE3:
-        if (!EKF3.getOriginLLH(-1,ret)) {
+        if (!EKF3.getOriginLLH(-1,ret))
+        {
             return false;
         }
         return true;
 
 #if CONFIG_HAL_BOARD == HAL_BOARD_SITL
     case EKF_TYPE_SITL:
-        if (!_sitl) {
+        if (!_sitl)
+        {
             return false;
         }
         const struct SITL::sitl_fdm &fdm = _sitl->state;
@@ -1490,9 +1509,16 @@ bool AP_AHRS_NavEKF::get_origin(Location &ret) const
     }
 }
 
-// get_hgt_ctrl_limit - get maximum height to be observed by the control loops in metres and a validity flag
-// this is used to limit height during optical flow navigation
-// it will return false when no limiting is required
+/**************************************************************************************************************
+*函数原型：bool AP_AHRS_NavEKF::get_hgt_ctrl_limit(float& limit) const
+*函数功能：获取控制回路观察到的最大高度（单位：米）和有效性标志这用于限制光流导航期间的高度,如果不需要限制，它将返回false
+*修改日期：2019-2-21
+*修改作者：cihang_uav
+*备注信息：get_hgt_ctrl_limit - get maximum height to be observed by the control loops in metres and a validity flag
+         this is used to limit height during optical flow navigation
+         it will return false when no limiting is required
+****************************************************************************************************************/
+
 bool AP_AHRS_NavEKF::get_hgt_ctrl_limit(float& limit) const
 {
     switch (ekf_type()) {

@@ -237,10 +237,11 @@ public:
     // alternative protocol function handler
     FUNCTOR_TYPEDEF(protocol_handler_fn_t, bool, uint8_t, AP_HAL::UARTDriver *);
 
-    struct stream_entries {
-        const streams stream_id;
-        const ap_message *ap_message_ids;
-        const uint8_t num_ap_message_ids;
+    struct stream_entries
+    {
+        const streams stream_id;           //数据流ID
+        const ap_message *ap_message_ids;  //信息ID
+        const uint8_t num_ap_message_ids;  //总数目
     };
     // vehicle subclass cpp files should define this:
     static const struct stream_entries all_stream_entries[];

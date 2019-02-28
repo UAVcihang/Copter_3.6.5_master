@@ -77,7 +77,7 @@ bool AP_OpticalFlow_PX4Flow::scan_buses(void)
     while (!success && retry_attempt < PX4FLOW_INIT_RETRIES)
     {
     	hal.console->printf("***^^^***000\r\n");
-        for (uint8_t bus = 0; bus < 3; bus++)
+        for (uint8_t bus = 0; bus < 4; bus++)
         {
     #ifdef HAL_OPTFLOW_PX4FLOW_I2C_BUS
             // only one bus from HAL
@@ -165,6 +165,11 @@ void AP_OpticalFlow_PX4Flow::timer(void)
         _applyYaw(state.flowRate);
         _applyYaw(state.bodyRate);
     }
-
+//    hal.uartC->printf("^^^^^^^^^^^^^\r\n");
+//    hal.uartC->printf("state.flowRate.x=%d\r\n",state.flowRate.x);
+//    hal.uartC->printf("state.flowRate.y=%d\r\n",state.flowRate.y);
+//    hal.uartC->printf("state.bodyRate.x=%d\r\n",state.bodyRate.x);
+//    hal.uartC->printf("state.bodyRate.y=%d\r\n",state.bodyRate.y);
+//    hal.uartC->printf("**************\r\n");
     _update_frontend(state);
 }

@@ -238,16 +238,23 @@ void AP_Camera::control(float session, float zoom_pos, float zoom_step, float fo
     GCS_MAVLINK::send_to_components(&msg);
 }
 
-/*
-  Send camera feedback to the GCS
- */
+/**************************************************************************************************************
+*函数原型：void AP_Camera::send_feedback(mavlink_channel_t chan)
+*函数功能：发送反馈信息
+*修改日期：2019-2-25
+*修改作者：cihang_uav
+*备注信息：Send camera feedback to the GCS
+****************************************************************************************************************/
+
 void AP_Camera::send_feedback(mavlink_channel_t chan)
 {
     float altitude, altitude_rel;
-    if (current_loc.flags.relative_alt) {
+    if (current_loc.flags.relative_alt)
+    {
         altitude = current_loc.alt+ahrs.get_home().alt;
         altitude_rel = current_loc.alt;
-    } else {
+    } else
+    {
         altitude = current_loc.alt;
         altitude_rel = current_loc.alt - ahrs.get_home().alt;
     }
@@ -263,41 +270,55 @@ void AP_Camera::send_feedback(mavlink_channel_t chan)
 }
 
 
-/*  update; triggers by distance moved
-*/
+/**************************************************************************************************************
+*函数原型：void AP_Camera::update()
+*函数功能：更新相机信息
+*修改日期：2019-2-25
+*修改作者：cihang_uav
+*备注信息： update; triggers by distance moved
+****************************************************************************************************************/
+
 void AP_Camera::update()
 {
-    if (AP::gps().status() < AP_GPS::GPS_OK_FIX_3D) {
+    if (AP::gps().status() < AP_GPS::GPS_OK_FIX_3D)
+    {
         return;
     }
 
-    if (is_zero(_trigg_dist)) {
+    if (is_zero(_trigg_dist))
+    {
         return;
     }
-    if (_last_location.lat == 0 && _last_location.lng == 0) {
+    if (_last_location.lat == 0 && _last_location.lng == 0)
+    {
         _last_location = current_loc;
         return;
     }
-    if (_last_location.lat == current_loc.lat && _last_location.lng == current_loc.lng) {
+    if (_last_location.lat == current_loc.lat && _last_location.lng == current_loc.lng)
+    {
         // we haven't moved - this can happen as update() may
         // be called without a new GPS fix
         return;
     }
 
-    if (get_distance(current_loc, _last_location) < _trigg_dist) {
+    if (get_distance(current_loc, _last_location) < _trigg_dist)
+    {
         return;
     }
 
-    if (_max_roll > 0 && fabsf(ahrs.roll_sensor*1e-2f) > _max_roll) {
+    if (_max_roll > 0 && fabsf(ahrs.roll_sensor*1e-2f) > _max_roll)
+    {
         return;
     }
 
-    if (_is_in_auto_mode != true && _auto_mode_only != 0) {
+    if (_is_in_auto_mode != true && _auto_mode_only != 0)
+    {
             return;
     }
 
     uint32_t tnow = AP_HAL::millis();
-    if (tnow - _last_photo_time < (unsigned) _min_interval) {
+    if (tnow - _last_photo_time < (unsigned) _min_interval)
+    {
         return;
     }
 
@@ -307,9 +328,15 @@ void AP_Camera::update()
     _last_photo_time = tnow;
 }
 
-/*
-  check if feedback pin is high
- */
+
+/**************************************************************************************************************
+*函数原型：void AP_Camera::feedback_pin_timer(void)
+*函数功能：
+*修改日期：2019-2-25
+*修改作者：cihang_uav
+*备注信息：check if feedback pin is high
+****************************************************************************************************************/
+
 void AP_Camera::feedback_pin_timer(void)
 {
     uint8_t pin_state = hal.gpio->read(_feedback_pin);
